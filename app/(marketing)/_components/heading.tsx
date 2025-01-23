@@ -6,6 +6,7 @@ import { SignInButton } from "@clerk/clerk-react";
 import { useConvexAuth } from "convex/react";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { Logo } from "./logo";
 
 export const Heading = () => {
     const { isAuthenticated, isLoading } = useConvexAuth();
@@ -36,6 +37,7 @@ export const Heading = () => {
                     </Button>
                 </SignInButton>
             )}
+            
         </div>
     )
 }

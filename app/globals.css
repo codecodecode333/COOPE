@@ -4,13 +4,17 @@
 
 html, body {
   height: 100%;
-  font-family: "Pretendard-Bold", Arial, Helvetica, sans-serif;
+}
+html,
+body,
+:root {
+  font-family: 'Pretendard-Bold';
 }
 
 @font-face {
   font-family: "Pretendard-Bold";
   font-weight: 200;
-  src: url("/public/fonts/Pretendard-Bold.ttf") format("truetype");
+  src: url("/fonts/Pretendard-Bold.woff2") format("woff");
 }
 @layer base {
   :root {
