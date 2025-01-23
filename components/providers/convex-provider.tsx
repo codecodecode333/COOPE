@@ -7,7 +7,7 @@ import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
-export const ConvexCLientProvider = ({
+export const ConvexClientProvider = ({
     children
 } : {
     children: ReactNode;
