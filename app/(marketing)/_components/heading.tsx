@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { Logo } from "./logo";
 
 export const Heading = () => {
     return (
@@ -10,7 +11,8 @@ export const Heading = () => {
             font-medium">
                 협업을 새롭게 정의하다
             </h3>
-            <Button>
+            <Logo />
+            <Button className="w-40 h-19">
                 시작하기
                 <ArrowRight className="h-4 w-4 ml-2"/>
             </Button>
