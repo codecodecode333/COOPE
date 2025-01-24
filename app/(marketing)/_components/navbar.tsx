@@ -9,8 +9,7 @@ import { Spinner } from "@/components/spinner";
 import { useClerk } from '@clerk/clerk-react';  // useClerk 훅 사용
 
 import { useConvexAuth } from "convex/react";
-import { Button } from "@/components/ui/button";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { SignInButton, UserButton } from "@clerk/nextjs";
 
 const Links = [
     { href:"/notice", text: '공지사항'},
@@ -58,9 +57,12 @@ export const Navbar = () => {
                         )}
                         {!isAuthenticated && !isLoading && (
                             <>
+                                <li className="relative group">
                                 <SignInButton mode="modal">
                                     로그인
                                 </SignInButton>
+                                <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black"></span>
+                                </li>
                             </>
                         )}
                         
