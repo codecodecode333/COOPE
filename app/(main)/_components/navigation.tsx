@@ -51,6 +51,7 @@ export const Navigation = () => {
                         currentWidth -= 10; // 5px씩 줄임
                         sidebarRef.current!.style.width = `${currentWidth}px`;
                     } else {
+                        sidebarRef.current!.style.width = `0px`
                         clearInterval(interval);
                     }
                 }, 1); // 10ms마다 실행
