@@ -3,7 +3,7 @@ import {
   SignedIn,
   SignedOut,
   UserButton
-} from '@clerk/nextjs'
+} from '@clerk/clerk-react'
 import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";

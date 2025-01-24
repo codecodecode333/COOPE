@@ -5,7 +5,8 @@ const Introduction = () => {
         <div className="min-h-full flex flex-col">
             <div className="flex flex-col items-center justify-center
               md:justify-start text-center gap-y-8 flex-1 px-6 pb-10">
-                <h1>회사소개</h1>
+                <h1 className="text-4xl font-bold">회사소개</h1>
+                
             </div>
               
         </div>

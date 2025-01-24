@@ -6,11 +6,10 @@ import { Logo } from "./logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import Link from "next/link";
 import { Spinner } from "@/components/spinner";
-import { useClerk } from '@clerk/clerk-react';  // useClerk 훅 사용
-
+import { SignInButton, useClerk, UserButton } from '@clerk/clerk-react';  // useClerk 훅 사용
 import { useConvexAuth } from "convex/react";
 import { Button } from "@/components/ui/button";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+//import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 const Links = [
     { href:"/notice", text: '공지사항'},
