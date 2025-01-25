@@ -6,7 +6,6 @@ export const createEmptyNotice = mutation({
     const id = await ctx.db.insert("notices", {
         author:"테스트1",
         content: "테스트 내용입니다.",
-        created_at: Date.now(),
         id: "1",
         title:"테스트 게시물1"
     });
@@ -14,6 +13,6 @@ export const createEmptyNotice = mutation({
   },
 });
 
-export const getNotices = query(async (ctx) => {
+export const get = query(async (ctx) => {
     return await ctx.db.query("notices").collect();
 });

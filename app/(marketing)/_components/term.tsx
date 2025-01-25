@@ -1,3 +1,5 @@
+//이용약관 내용
+
 const Terms = () => {
     return ( 
         <p className="w-50 h-80">

@@ -1,5 +1,7 @@
 import React from "react";
 
+//개인정보정책 내용
+
 const Policy = () => {
     return(
         <p className="w-50 h-80">
