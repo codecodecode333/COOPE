@@ -5,6 +5,7 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 
+//git 브런치 이름 변경후 테스트
 
 //자주 묻는 질문 내용 dark mode일때 아무것도 안보임 수정필요
 const FaqContent = () => {
