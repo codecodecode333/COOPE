@@ -6,18 +6,18 @@ import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 
 const Notice = () => {
-    // notices 테이블에서 데이터 가져옴옴.
-    const notices = useQuery(api.notices.getNotices);
+    // notices 테이블에서 데이터 가져옴.
+    const notices = useQuery(api.notices.get);
 
     return (
         <div className="min-h-full flex flex-col">
             <div className="flex flex-col items-center justify-center
               md:justify-start text-center gap-y-8 flex-1 px-6 pb-10">
                 <h1 className="text-4xl font-bold">공지사항</h1>
-                
+
                 {/* notices 리스트를 표시  dark일때 색깔이 미묘하기 때문에 나중에 살펴보기*/}
-                <div className="w-full max-w-2xl dark:bg-slate-500 rounded-lg">
-                    
+                <div className="w-full max-w-2xl rounded">
+
                     {notices === undefined ? (
                         <p>로딩 중...</p>
                     ) : notices.length === 0 ? (

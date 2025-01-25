@@ -1,10 +1,14 @@
 "use client"
 
 import { SetStateAction, useState } from "react";
+import EmojiPicker from 'emoji-picker-react';
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 const NewPost = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [open, setOpen] =useState(false); //emoji picker handle용
 
   const handleTitleChange = (e: { target: { value: SetStateAction<string>; }; }) => setTitle(e.target.value);
   const handleContentChange = (e: { target: { value: SetStateAction<string>; }; }) => setContent(e.target.value);
@@ -14,18 +18,23 @@ const NewPost = () => {
     // 여기서 API 요청을 보내서 새 게시물을 생성하지만 일단 convex랑 연결이니까 손봐야하는 부분
     //습.. 이거 convex랑 어케 연결하지
     // 예: await axios.post('/api/posts', { title, content });
-    console.log("Title:", title);
-    console.log("Content:", content);
   };
 
-  //dark일때 색깔들이 애매함 이것도 나중에 조정
+  const hadnleEmojiPicker = () => {
+    if(!open) {
+      setOpen(true);
+    } else {
+      setOpen(false);
+    }
+  }
+
   return (
     <div>
       <div className="heading text-center font-bold text-2xl m-5">공지사항</div>
       <style jsx>{`
-        body { background: white !important; }
+        body { background: white }
       `}</style>
-      <div className="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl">
+      <div className="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl rounded-lg">
         <input
           className="title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none"
           spellCheck="false"
@@ -44,18 +53,17 @@ const NewPost = () => {
         
         {/* icons */}
         <div className="icons flex text-gray-500 m-2">
-          <svg className="mr-2 cursor-pointer hover:text-gray-700 border rounded-full p-1 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <svg className="mr-2 cursor-pointer hover:text-gray-700 border rounded-full p-1 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg onClick={hadnleEmojiPicker} className="mr-2 cursor-pointer hover:text-gray-700 border rounded-full p-1 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />         
           </svg>
           <svg className="mr-2 cursor-pointer hover:text-gray-700 border rounded-full p-1 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
           </svg>
-          <div className="count ml-auto text-gray-400 text-xs font-semibold">0/300</div>
+        <div className="count ml-auto text-gray-400 text-xs font-semibold">0/300</div>
+            
         </div>
+        <EmojiPicker open={open}/>
+
 
         {/* buttons */}
         <div className="buttons flex">
