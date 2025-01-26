@@ -2,6 +2,7 @@ import { Heading } from "./_components/heading"
 import { Heroes } from "./_components/heroes";
 
 const MarketingPage = () =>{
+  
   return (
     <div className="min-h-full flex flex-col">
       <div className="flex flex-col items-center justify-center

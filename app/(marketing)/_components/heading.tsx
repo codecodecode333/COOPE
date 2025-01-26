@@ -16,6 +16,7 @@ export const Heading = () => {
             font-medium">
                 협업을 새롭게 정의하다
             </h3>
+            <Logo />
             { isLoading && (
                 <div className="w-full flex items-center justify-center">
                     <Spinner size="lg"/>
@@ -30,7 +31,7 @@ export const Heading = () => {
                 </Button>
             )}
             {!isAuthenticated && !isLoading && (
-                <SignInButton>
+                <SignInButton mode="modal">
                     <Button>
                         Get Coope free
                         <ArrowRight className="h-4 w-4 ml-2" />
