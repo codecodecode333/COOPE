@@ -1,32 +1,25 @@
 "use client"
 
-import { SetStateAction, useState } from "react";
+import { useState } from "react";
 import EmojiPicker from 'emoji-picker-react';
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 const NewPost = () => {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [open, setOpen] =useState(false); //emoji picker handle용
+  const [open, setOpen] =useState(false); //emoji picker 
+  const [text, setText] = useState("");
+  const [cursorPosition, setCursorPosition] = useState(null);
 
-  const handleTitleChange = (e: { target: { value: SetStateAction<string>; }; }) => setTitle(e.target.value);
-  const handleContentChange = (e: { target: { value: SetStateAction<string>; }; }) => setContent(e.target.value);
-
-  const handleSubmit = async (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    // 여기서 API 요청을 보내서 새 게시물을 생성하지만 일단 convex랑 연결이니까 손봐야하는 부분
-    //습.. 이거 convex랑 어케 연결하지
-    // 예: await axios.post('/api/posts', { title, content });
-  };
-
-  const hadnleEmojiPicker = () => {
+  const handleEmojiPicker = () => {
     if(!open) {
       setOpen(true);
     } else {
       setOpen(false);
     }
   }
+  
+  
+  
 
   return (
     <div>
@@ -34,26 +27,22 @@ const NewPost = () => {
       <style jsx>{`
         body { background: white }
       `}</style>
-      <div className="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl rounded-lg">
+      <form className="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl rounded-lg">
         <input
           className="title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none"
           spellCheck="false"
           placeholder="제목"
           type="text"
-          value={title}
-          onChange={handleTitleChange}
         />
         <textarea
           className="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none"
           spellCheck="false"
           placeholder="내용을 입력하세요."
-          value={content}
-          onChange={handleContentChange}
         ></textarea>
         
         {/* icons */}
         <div className="icons flex text-gray-500 m-2">
-          <svg onClick={hadnleEmojiPicker} className="mr-2 cursor-pointer hover:text-gray-700 border rounded-full p-1 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg onClick={handleEmojiPicker} className="mr-2 cursor-pointer hover:text-gray-700 border rounded-full p-1 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />         
           </svg>
           <svg className="mr-2 cursor-pointer hover:text-gray-700 border rounded-full p-1 h-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -68,9 +57,9 @@ const NewPost = () => {
         {/* buttons */}
         <div className="buttons flex">
           <button className="btn border border-gray-300 p-1 px-4 font-semibold cursor-pointer text-gray-500 ml-auto rounded-md">취소</button>
-          <button className="btn border  p-1 px-4 font-semibold cursor-pointer text-gray-200 ml-2 bg-black rounded-md" onClick={handleSubmit}>게시</button>
+          <button className="btn border  p-1 px-4 font-semibold cursor-pointer text-gray-200 ml-2 bg-black rounded-md">게시</button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };
