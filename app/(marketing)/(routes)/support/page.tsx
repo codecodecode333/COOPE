@@ -1,10 +1,10 @@
 "use client"
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import Modal from "../_components/modal";
+import Modal from "../../_components/modal";
 import { useState } from "react"
 import { MailOpen } from "lucide-react";
-import FaqContent from "../_components/faq";
+import FaqContent from "../../_components/faq";
 
 const Support = () => {
   const [isQnaModalOpen, setIsQnaModalOpen] = useState(false);
