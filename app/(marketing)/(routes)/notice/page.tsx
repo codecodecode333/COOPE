@@ -32,12 +32,19 @@ const formatDate = (timeStamp: string | number | Date) => {
 const Notice = () => {
     // notices 테이블에서 데이터 가져옴.
     const notices = useQuery(api.notices.get);
-    
-    if (notices !== undefined) { // notices가 존재할때만
-        // 최신순으로 정렬 -> 없으면 오래된 게시글이 위로 올라감
+
+    /* 최신순으로 정렬, 최신 항목이 오래된 항목보다 배열 인덱스 값이 작도록 -> 오래된 글이 최신글보다 밑에 위치. 
+        공지사항 목록 출력시 번호를 매길 때 notices.length - index로 번호를 매기면 최신 항목이 가장 큰 번호를 가지게 됨
+        ex) <TableCell className="font-medium text-left">{notices.length - index}</TableCell> -> 배열의 크기가 4일때
+        index 0: 4-0 = 4
+        index 1: 4-1 = 3
+        index 2: 4-2 = 2
+        index 3: 4-3 =1
+        */
+    if (notices !== undefined) {
         notices.sort((a, b) => new Date(b._creationTime).getTime() - new Date(a._creationTime).getTime());
     }
-    
+
     return (
         <div className="min-h-full flex flex-col">
             <div className="flex w-full flex-col items-center
@@ -52,7 +59,7 @@ const Notice = () => {
                         <p>공지사항이 없습니다.</p>
                     ) : (
                         <Table className="w-full">
-                            <TableCaption>글쓰기는 관리자의 권한입니다. 권한이 없는 사용자가 누를 시 메인페이지로 돌아갑니다</TableCaption>
+                            <TableCaption>글쓰기는 관리자의 권한입니다. 권한 없는 사용자가 누를 시 메인페이지로 돌아갑니다</TableCaption>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-[100px]">번호</TableHead>
@@ -62,14 +69,19 @@ const Notice = () => {
                                 </TableRow>
                             </TableHeader>
                             {notices.map((notice, index) => (
-                            <TableBody key={notice._id}>
-                                <TableRow>
-                                    <TableCell className="font-medium text-left">{index + 1}</TableCell>
-                                    <TableCell className="text-left">{notice.title}</TableCell>
-                                    <TableCell className="text-left">{notice.author}</TableCell>
-                                    <TableCell className="text-right">{formatDate(notice._creationTime)}</TableCell>
-                                </TableRow>
-                            </TableBody>))}
+                                <TableBody key={notice._id}>
+                                    <TableRow>
+                                        <TableCell className="font-medium text-left">{notices.length - index}</TableCell>
+                                        <TableCell className="text-left">
+                                            <Link className="cursor-pointer" href={{
+                                                pathname: "/noticePage",
+                                                query: { noticeId: notice.id },
+                                            }}>{notice.title}</Link>
+                                        </TableCell>
+                                        <TableCell className="text-left">{notice.author}</TableCell>
+                                        <TableCell className="text-right">{formatDate(notice._creationTime)}</TableCell>
+                                    </TableRow>
+                                </TableBody>))}
                         </Table>
                     )}
                 </div>
@@ -88,53 +100,3 @@ const Notice = () => {
 }
 
 export default Notice;
-
-
-
-/* 
-
--Table 사용전 게시판 목록 보여줄 때 사용한 것
-<ul className="space-y-4">
-                            {notices.map((notice) => (
-                                <li key={notice._id} className="border p-4 rounded">
-                                    <h2 className="text-xl font-semibold">{notice.title}</h2>
-                                    <p className="text-gray-600">{formatDate(notice._creationTime)}</p>
-                                    <p className="text-gray-600">{notice.author} 작성</p>
-                                </li>
-                            ))}
-                        </ul>
-
-*/
-
-//리스트 출력하기 전 코드 예비용
-
-/*"use client";
-
-import React from "react";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useAuth, useUser } from "@clerk/nextjs";
-import { checkRole } from '@/utils/roles'
-import Link from "next/link";
-const Notice = () => {
-    
-
-    return(
-        <div className="min-h-full flex flex-col">
-            <div className="flex flex-col items-center justify-center
-              md:justify-start text-center gap-y-8 flex-1 px-6 pb-10">
-                <h1 className="text-4xl font-bold">공지사항</h1>
-                <div className="">
-                    <Link href="/admin">
-                        <button className="bg-black text-white font-bold py-2 px-4 rounded right-0">
-                        글쓰기
-                        </button>
-                    </Link>
-                </div>
-            </div>
-        </div>
-    )
-}
-export default Notice; */
-
-

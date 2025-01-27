@@ -1,5 +1,5 @@
 import { mutation, query } from "./_generated/server";
-
+import { v } from "convex/values";
 export const createEmptyNotice = mutation({
   args: {},
   handler: async (ctx) => {
@@ -15,4 +15,12 @@ export const createEmptyNotice = mutation({
 
 export const get = query(async (ctx) => {
     return await ctx.db.query("notices").collect();
+});
+
+export const getById = query({
+  args: { id: v.string() }, // Validator 사용
+  handler: async (ctx, { id }) => {
+    const notice = await ctx.db.query("notices").filter(q => q.eq(q.field("id"), id)).first();
+    return notice;
+  },
 });

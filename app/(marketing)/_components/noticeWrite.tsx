@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import EmojiPicker from 'emoji-picker-react';
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 
+
+/* 
+  글쓰기 UI 좀 더 고민해보기
+*/
 const NewPost = () => {
   const [open, setOpen] =useState(false); //emoji picker 
-  const [text, setText] = useState("");
-  const [cursorPosition, setCursorPosition] = useState(null);
+
 
   const handleEmojiPicker = () => {
     if(!open) {
