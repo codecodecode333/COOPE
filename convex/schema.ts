@@ -3,7 +3,6 @@ import { v } from "convex/values";
 
 export default defineSchema({
   notices: defineTable({
-    id: v.string(), //공지사항 ID
     title: v.string(),
     content: v.string(),
     file: v.optional(v.string()),
