@@ -14,6 +14,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+
 import {
     Pagination,
     PaginationContent,
@@ -22,7 +23,7 @@ import {
     PaginationPrevious,
     PaginationNext,
     PaginationEllipsis,
-} from "@/components/ui/pagination"; // 여기에 맞춰서 import하세요.
+} from "@/components/ui/pagination";
 
 const formatDate = (timeStamp: string | number | Date) => {
     const date = new Date(timeStamp);
@@ -41,7 +42,7 @@ const formatDate = (timeStamp: string | number | Date) => {
 const Notice = () => {
     // notices 테이블에서 데이터 가져옴.
     const notices = useQuery(api.notices.get);
-    const [currentPage, setCurrentPage] = useState(1); //현재 페이지 1로 초기화
+    const [currentPage, setCurrentPage] = useState<number>(1); //현재 페이지 1로 초기화
     const noticesPerPage = 10; //페이지당 표시될 공지사항의 개수 
 
     /* 페이지네이션을 위해 데이터 슬라이스, notices의 (currentPage - 1) * noticesPerPage 부터 currentPage * noticesPerPage 까지 추출 
@@ -65,6 +66,12 @@ const Notice = () => {
         notices.sort((a, b) => new Date(b._creationTime).getTime() - new Date(a._creationTime).getTime());
     }
 
+    /* 
+     SetStateAction에 대한 설명은 찾아보면 많이 나오지만, 여기서 pageNumber: React.SetStateAction<Number>를 사용한 이유는 
+     pageNumber를를 prop을 단순히 pageNumber: number로 타입을 지정하면 함수로 상태를 업데이트할 수 없음. 오직 숫자로만 가능
+     setStateAction을 통해 타입을 지정하면 숫자, 함수를 통해 상태를 업데이트 할 수 있음
+     handlePageChange(Math.max(currentPage - 1, 1))처럼 함수를 값으로 받아오기 위해 이런 타입지정이 필요함
+    */
 
     const handlePageChange = (pageNumber: React.SetStateAction<number>) => {
         setCurrentPage(pageNumber);
