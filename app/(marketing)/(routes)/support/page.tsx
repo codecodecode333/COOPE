@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Modal from "../../_components/modal";
 import { useState } from "react"
-import { MailOpen } from "lucide-react";
+import { BookOpenText, MailOpen } from "lucide-react";
 import FaqContent from "../../_components/faq";
 
 const Support = () => {
@@ -18,6 +18,9 @@ const Support = () => {
         <div className="tracking-in-expand">
           <h3 className="mb-4">Coope의 기능들을 함께 알아보고, 의문을 해결하세요. </h3>
           <Button onClick={openQnaModal}>
+            <BookOpenText /> Coope의 기능
+          </Button>
+          <Button onClick={openQnaModal} className="mx-2">
             <MailOpen /> 자주 묻는 질문
           </Button>
           <div className="flex items-center">
