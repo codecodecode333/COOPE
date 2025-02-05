@@ -1,7 +1,7 @@
 export default {
     providers: [
       {
-        domain: "https://quixotic-pony-329.convex.cloud",
+        domain: "https://ample-shrew-85.clerk.accounts.dev",
         applicationID: "convex",
       }
     ],

@@ -25,7 +25,7 @@ function UserItem() {
           role="button"
           className="flex items-center text-sm p-3 w-full hover:bg-primary/5"
         >
-          <div className="gap-x-1 flex items-center max-w-[150px] ml-3">
+          <div className="gap-x-1 flex items-center max-w-[150px] ml-5">
             <Avatar className="h-5 w-5 rounded-[6px]">
               <AvatarImage
                 src={user?.imageUrl}

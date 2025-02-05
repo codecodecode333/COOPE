@@ -4,8 +4,11 @@ import { cn } from "@/lib/utils";
 import { ChevronsLeft, MenuIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import UserItem from "./user-item";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export const Navigation = () => {
+    const documents = useQuery(api.documents.get);
 
     const isresizingRef = useRef(false);
     const sidebarRef = useRef<HTMLElement | null>(null);
@@ -14,6 +17,7 @@ export const Navigation = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const originalWidthRef = useRef<number>(240); // 원래 너비를 저장하는 ref
+
 
     const MIN_WIDTH = 210; // 최소 너비
     const MAX_WIDTH = 700; // 최대 너비
@@ -100,8 +104,12 @@ export const Navigation = () => {
                 <div>
                     <UserItem/>
                 </div>
-                <div className="mt-4">
-                    <p className="text-white">Documents</p>
+                <div className="mt-4 text-white">
+                    {documents?.map((document) => (
+                        <p className="ml-6 mt-2" key={document._id}>
+                            {document.title}
+                        </p>
+                    ))}
                 </div>
                 <div
                     onMouseDown={handleMouseDown}
