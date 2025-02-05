@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import Link from "next/link";
 
 /*
     Next Js 13v 이후부터는 useRouter등의 기능을 next/routes가 아니라 next/navigation에서 가져와야한다.. 이걸 몰라서 고생했다
@@ -45,6 +46,18 @@ const NoticePage = () => {
             <div className="text-gray-700 text-lg leading-relaxed">
                 {notice.content}
             </div>
+            {notice.fileUrl && (
+                <div className="mt-4">
+                    <h2 className="text-xl font-bold mb-2">첨부 파일</h2>
+                    {notice.fileFormat?.startsWith('image/')?(
+                        <img src={notice.fileUrl} alt="첨부 이미지" width="500px" height="400px" />
+                    ) : (
+                        <Link href={notice.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                            파일 다운로드
+                        </Link>
+                    )}
+                </div>
+            )}
         </div>
     )
 };

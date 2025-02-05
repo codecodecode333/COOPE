@@ -17,10 +17,14 @@ export const createEmptyNotice = mutation({
 
 //글쓰기로 notice 작성 후 게시 눌렀을 때때
 export const createNotice = mutation({
-  args:{ title: v.string(), content: v.string(), file: v.optional(v.string()), author: v.string()},
+  args:{ title: v.string(),
+  content: v.string(),
+  storageId: v.optional(v.id("_storage")),
+  author: v.string(),
+  fileFormat: v.optional(v.string())},
   handler: async (ctx, args) => {
-    const { title, content, author, file } = args;
-    const notice = await ctx.db.insert("notices",{ title, content, author, file});
+    const { title, content, author, storageId, fileFormat } = args;
+    const notice = await ctx.db.insert("notices",{ title, content, author, file: storageId, fileFormat});
     return notice;
   },
 });
@@ -31,7 +35,7 @@ export const get = query(async (ctx) => {
 });
 
 //_id 값으로 게시글 가져옴
-export const getById = query({
+/*export const getById = query({
   args: { id: v.string() },
   handler: async (ctx, args) => {
     const id = ctx.db.normalizeId("notices",args.id);
@@ -40,6 +44,30 @@ export const getById = query({
     }
     return await ctx.db.get(id);
   },
+});*/
+export const getById = query({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    const id = ctx.db.normalizeId("notices", args.id);
+    if (id === null) {
+      return null;
+    }
+    const notice = await ctx.db.get(id);
+    if (!notice) {
+      return null;
+    }
+    
+    let fileUrl = null;
+    if (notice.file) {
+      fileUrl = await ctx.storage.getUrl(notice.file);
+    }
+    
+    return { ...notice, fileUrl };
+  },
 });
 
+
+export const generateUploadUrl = mutation(async (ctx) => {
+  return await ctx.storage.generateUploadUrl();
+})
 

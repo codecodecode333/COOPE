@@ -68,7 +68,7 @@ const Notice = () => {
 
     /* 
      SetStateAction에 대한 설명은 찾아보면 많이 나오지만, 여기서 pageNumber: React.SetStateAction<Number>를 사용한 이유는 
-     pageNumber를를 prop을 단순히 pageNumber: number로 타입을 지정하면 함수로 상태를 업데이트할 수 없음. 오직 숫자로만 가능
+     pageNumber prop을 단순히 pageNumber: number로 타입을 지정하면 함수로 상태를 업데이트할 수 없음. 오직 숫자로만 가능
      setStateAction을 통해 타입을 지정하면 숫자, 함수를 통해 상태를 업데이트 할 수 있음
      handlePageChange(Math.max(currentPage - 1, 1))처럼 함수를 값으로 받아오기 위해 이런 타입지정이 필요함
     */
