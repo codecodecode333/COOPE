@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { ChevronsLeft, MenuIcon } from "lucide-react";
 import { useRef, useState } from "react";
+import UserItem from "./user-item";
 
 export const Navigation = () => {
 
@@ -82,7 +83,7 @@ export const Navigation = () => {
                     isResetting && "transition-all ease-in-out duration-300"
                     //isMobile && "w-0"
                 )}
-            >
+            >   
                 <div className="p-4">
                     <img src="/logo-dark.png" alt="Logo" className="w-44 h-auto ml-2" />
                 </div>
@@ -97,7 +98,7 @@ export const Navigation = () => {
                     <ChevronsLeft className="h-6 w-6" />
                 </div>
                 <div>
-                    <p className="text-white">Action items</p>
+                    <UserItem/>
                 </div>
                 <div className="mt-4">
                     <p className="text-white">Documents</p>

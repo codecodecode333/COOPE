@@ -1,7 +1,7 @@
 export default {
     providers: [
       {
-        domain: "https://renewed-pipefish-31.clerk.accounts.dev",
+        domain: "https://quixotic-pony-329.convex.cloud",
         applicationID: "convex",
       }
     ],
