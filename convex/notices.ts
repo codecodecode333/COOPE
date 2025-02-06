@@ -15,16 +15,18 @@ export const createEmptyNotice = mutation({
   },
 });
 
-//글쓰기로 notice 작성 후 게시 눌렀을 때때
+//글쓰기로 notice 작성 후 게시 눌렀을 때
 export const createNotice = mutation({
   args:{ title: v.string(),
   content: v.string(),
   storageId: v.optional(v.id("_storage")),
   author: v.string(),
-  fileFormat: v.optional(v.string())},
+  fileFormat: v.optional(v.string()),
+  fileName: v.optional(v.string())},
+  
   handler: async (ctx, args) => {
-    const { title, content, author, storageId, fileFormat } = args;
-    const notice = await ctx.db.insert("notices",{ title, content, author, file: storageId, fileFormat});
+    const { title, content, author, storageId, fileFormat, fileName } = args;
+    const notice = await ctx.db.insert("notices",{ title, content, author, file: storageId, fileFormat, fileName});
     return notice;
   },
 });

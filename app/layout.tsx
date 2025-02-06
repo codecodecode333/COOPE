@@ -4,6 +4,7 @@ import {
   SignedOut,
   UserButton
 } from '@clerk/clerk-react'
+import { Toaster } from "sonner";
 import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -53,7 +54,9 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-          storageKey="coope-theme-2">
+          storageKey="coope-theme-2"
+          >
+            <Toaster position="bottom-center" />
           {children}
           </ThemeProvider>
         </ConvexClientProvider>

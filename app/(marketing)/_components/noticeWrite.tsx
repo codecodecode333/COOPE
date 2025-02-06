@@ -1,13 +1,12 @@
 "use client"
 
-import { FormEvent, useRef, useState } from "react";
-import EmojiPicker from 'emoji-picker-react';
+import React, { useEffect, useRef, useState } from "react";
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { Button } from "@/components/ui/button";
 import { useMutation } from "convex/react";
 import { useUser } from "@clerk/clerk-react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
-
 /* 
   글쓰기 UI 좀 더 고민해보기
 */
@@ -42,6 +41,7 @@ const NewPost = () => {
     try {
       let storageId;
       let fileFormat;
+      let fileName;
       if (selectedFile) {
         const postUrl = await generateUploadUrl();
         const result = await fetch(postUrl, {
@@ -52,6 +52,7 @@ const NewPost = () => {
         const { storageId: uploadedStorageId } = await result.json();
         fileFormat = selectedFile!.type;
         storageId = uploadedStorageId;
+        fileName = selectedFile!.name;
       }
       await createNotice({
         title,
@@ -59,6 +60,7 @@ const NewPost = () => {
         author: user.fullName,
         storageId,
         fileFormat,
+        fileName,
       });
       setTitle('');
       setContent('');
@@ -82,10 +84,13 @@ const NewPost = () => {
     router.push('/notice');
   };
 
+  const handleContnetChange = (e: any) => {
+    setContent(e.target.value);
+  }
 
-
-
-
+  const handleEmojiClick = (emojiObject: { emoji: string; }) => {
+    setContent(prevContent => prevContent + emojiObject.emoji);
+  }
 
 
   return (
@@ -106,7 +111,7 @@ const NewPost = () => {
           placeholder="내용을 입력하세요."
           name="content"
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={handleContnetChange}
           required
         />
 
@@ -118,6 +123,7 @@ const NewPost = () => {
           <input
             type="file"
             ref={fileInput}
+            multiple
             onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
             className="hidden"
             id="fileInput"
@@ -131,7 +137,7 @@ const NewPost = () => {
           <div className="count ml-auto text-gray-400 text-xs font-semibold">0/300</div>
 
         </div>
-        <EmojiPicker open={open} />
+        <EmojiPicker open={open} onEmojiClick={handleEmojiClick}/>
 
 
         {/* buttons */}
