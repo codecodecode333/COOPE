@@ -49,10 +49,11 @@ const NoticePage = () => {
             {notice.fileUrl && (
                 <div className="mt-4">
                     <h2 className="text-xl font-bold mb-2">첨부 파일</h2>
+                    <h3>{notice.fileName}</h3>
                     {notice.fileFormat?.startsWith('image/')?(
                         <img src={notice.fileUrl} alt="첨부 이미지" width="500px" height="400px" />
                     ) : (
-                        <Link href={notice.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                        <Link href={notice.fileUrl} download={notice.fileName} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
                             파일 다운로드
                         </Link>
                     )}
