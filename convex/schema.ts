@@ -10,6 +10,10 @@ export default defineSchema({
     fileName: v.optional(v.string()),
     author: v.string(),
   }),
+  comments: defineTable({
+    content: v.string(),
+    author: v.string(),
+  }),
   documents: defineTable({
     title: v.string(),
     userId: v.string(),
