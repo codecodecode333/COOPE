@@ -172,3 +172,26 @@ body,
   height: 30rem;
   text-align: center;
 }
+
+.div-container {
+  display: grid;
+  position: relative;
+  overflow-x: auto;
+  grid-template-columns: auto auto auto auto auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  margin-bottom: 5rem;
+}
+
+.div-box {
+  border: 2px solid gray;
+  height: 10rem;
+  width: 90%;
+  margin-right: 2rem;
+  text-align: center; 
+}
+
+.div-box:hover {
+  background-color: rgb(224, 248, 255);
+  border: 2px solid rgb(123, 172, 180);
+}
