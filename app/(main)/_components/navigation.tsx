@@ -1,20 +1,21 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronsLeft, MenuIcon } from "lucide-react";
+import { ChevronsLeft, MenuIcon, PlusCircle, Search, Settings } from "lucide-react";
 import { useRef, useState } from "react";
 import UserItem from "./user-item";
-import { useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Item } from "./item";
+import { toast } from "sonner";
+import { DocumentList } from "./document-list";
 
 export const Navigation = () => {
-    const documents = useQuery(api.documents.get);
+    const create = useMutation(api.documents.create);
 
-    const isresizingRef = useRef(false);
     const sidebarRef = useRef<HTMLElement | null>(null);
     const navbarRef = useRef<HTMLDivElement | null>(null);
-    const [isResetting, setIsResetting] = useState(false);
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isResetting] = useState(false)
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const originalWidthRef = useRef<number>(240); // 원래 너비를 저장하는 ref
 
@@ -77,6 +78,15 @@ export const Navigation = () => {
         });
     };
 
+    const handleCreate = () => {
+        const promise = create({ title: "Untitled" });
+        toast.promise(promise, {
+            loading: "Creating a new note...",
+            success: "New note created!",
+            error: "Failed to create a new note."
+        });
+    };
+
     return (
         <>
             <aside 
@@ -103,13 +113,25 @@ export const Navigation = () => {
                 </div>
                 <div>
                     <UserItem/>
+                    <Item
+                        label="Search"
+                        icon={Search}
+                        isSearch
+                        onClick={() => {}}
+                    />
+                    <Item
+                        label="Settings"
+                        icon={Settings}
+                        onClick={() => {}}
+                    />
+                    <Item 
+                        onClick={handleCreate} 
+                        label="New page"
+                        icon= {PlusCircle}
+                    />
                 </div>
                 <div className="mt-4 text-white">
-                    {documents?.map((document) => (
-                        <p className="ml-6 mt-2" key={document._id}>
-                            {document.title}
-                        </p>
-                    ))}
+                    <DocumentList/>
                 </div>
                 <div
                     onMouseDown={handleMouseDown}
