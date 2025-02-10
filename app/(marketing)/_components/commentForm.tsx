@@ -2,10 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 
-export const CommentFrom = () => {
+export const CommentFrom = ({notice}: {notice: string}) => {
     const [content, setContent] = useState('');
     const { user } = useUser();
     const addComment = useMutation(api.comments.addComment);
@@ -18,15 +18,21 @@ export const CommentFrom = () => {
             alert('로그인이 필요합니다.');
             return;
         }
-        if (!user.fullName) {
-            alert('유저가 존재하지 않습니다.')
+        if(!user.username){
+            alert('유저가 존재하지않습니다');
             return;
+        }
+        if(!notice) {
+            alert('공지사항이 존재하지않습니다.')
+            return ;
         }
         try {
 
             await addComment({
                 content,
-                author: user?.fullName,
+                author: user?.username,
+                postId: notice, 
+                authorImgUrl: user?.imageUrl
             });
             setContent('');
         } catch (error) {

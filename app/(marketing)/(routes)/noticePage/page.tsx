@@ -62,8 +62,8 @@ const NoticePage = () => {
                         )}
                     </div>
                 )}
-                <CommentFrom />
-                <CommentList />
+                <CommentFrom notice={noticeId}/>
+                <CommentList notice={noticeId}/>
             </div>
         </div>
     )
