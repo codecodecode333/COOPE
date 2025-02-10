@@ -100,9 +100,9 @@ const Notice = () => {
                                     </TableRow>
                                 </TableHeader>
                                 {paginatedNotices.map((notice, index) => (
-                                    <TableBody key={notice._id}>
+                                    <TableBody key={notice._id} className="font-semibold">
                                         <TableRow>
-                                            <TableCell className="font-medium text-left">{notices.length - (currentPage - 1) * noticesPerPage - index}</TableCell>
+                                            <TableCell className="text-left">{notices.length - (currentPage - 1) * noticesPerPage - index}</TableCell>
                                             <TableCell className="text-left">
                                                 <Link className="cursor-pointer" href={{
                                                     pathname: "/noticePage",

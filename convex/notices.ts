@@ -36,17 +36,17 @@ export const get = query(async (ctx) => {
     return await ctx.db.query("notices").collect();
 });
 
-//_id 값으로 게시글 가져옴
-/*export const getById = query({
-  args: { id: v.string() },
+export const getNoticeForComments = query({
+  args: {id: v.id("notices")},
   handler: async (ctx, args) => {
-    const id = ctx.db.normalizeId("notices",args.id);
-    if ( id === null ) {
+    const id = ctx.db.get(args.id);
+    if (!id) {
       return null;
     }
-    return await ctx.db.get(id);
-  },
-});*/
+    return id;
+  }
+})
+
 export const getById = query({
   args: { id: v.string() },
   handler: async (ctx, args) => {

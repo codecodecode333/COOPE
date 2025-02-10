@@ -5,17 +5,7 @@
 html, body {
   height: 100%;
 }
-html,
-body,
-:root {
-  font-family: 'Pretendard-Bold';
-}
 
-@font-face {
-  font-family: "Pretendard-Bold";
-  font-weight: 200;
-  src: url("/fonts/Pretendard-Bold.woff2") format("woff");
-}
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -194,4 +184,33 @@ body,
 .div-box:hover {
   background-color: rgb(224, 248, 255);
   border: 2px solid rgb(123, 172, 180);
+}
+
+.comment-box {
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto auto;
+  column-gap: 1rem;
+}
+
+
+.speech-bubble {
+	position: relative;
+  padding: 1rem;
+	background: #e8f3f3;
+	border-radius: .4em;
+}
+
+.speech-bubble:after {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 50%;
+	width: 0;
+	height: 0;
+	border: 0.688em solid transparent;
+	border-right-color: #e8f3f3;
+	border-left: 0;
+	margin-top: -0.687em;
+	margin-left: -0.687em;
 }

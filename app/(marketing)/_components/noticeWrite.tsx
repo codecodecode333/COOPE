@@ -29,7 +29,7 @@ const NewPost = () => {
       alert('로그인이 필요합니다.');
       return;
     }
-    if (!user.fullName) {
+    if (!user.username) {
       alert('유저가 존재하지 않습니다.')
       return;
     } //user.fullName이 null인 경우를 처리해 주지 않으면 오류남
@@ -57,7 +57,7 @@ const NewPost = () => {
       await createNotice({
         title,
         content,
-        author: user.fullName,
+        author: user.username,
         storageId,
         fileFormat,
         fileName,

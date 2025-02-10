@@ -24,7 +24,7 @@ const functionPage = () => {
               md:justify-start text-center gap-y-8 flex-1 px-6 pb-10">
                 <h1 className="text-4xl font-bold">기능</h1>
                 <div className='tracking-in-expand'>
-                    <h2 className="text-gray-800">Coope의 다양한 기능들을 소개합니다! 기능을 알아보고 함께 만들러가요!</h2>
+                    <h2 className='font-semibold'>Coope의 다양한 기능들을 소개합니다! 기능을 알아보고 함께 만들러가요!</h2>
                     <div>
                         <Image
                             src="/functionPeople.png"
