@@ -9,6 +9,7 @@ export default defineSchema({
     fileFormat: v.optional(v.string()),
     fileName: v.optional(v.string()),
     author: v.string(),
+    authorId: v.string()
   }),
   comments: defineTable({
     content: v.string(),

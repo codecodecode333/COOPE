@@ -187,30 +187,24 @@ html, body {
 }
 
 .comment-box {
-  display: grid;
+  display: flex;
+  position: relative;
   align-items: center;
   grid-template-columns: auto auto;
-  column-gap: 1rem;
+  margin-top: 5;
+  column-gap: 0.688rem;
 }
 
-
+.comment-textarea {
+  resize: none;
+  border: 2px solid rgb(159, 159, 159);
+  border-radius: 5;
+}
 .speech-bubble {
 	position: relative;
   padding: 1rem;
 	background: #e8f3f3;
+  width: 100%;
 	border-radius: .4em;
-}
-
-.speech-bubble:after {
-	content: '';
-	position: absolute;
-	left: 0;
-	top: 50%;
-	width: 0;
-	height: 0;
-	border: 0.688em solid transparent;
-	border-right-color: #e8f3f3;
-	border-left: 0;
-	margin-top: -0.687em;
-	margin-left: -0.687em;
+  word-break: break-all;
 }
