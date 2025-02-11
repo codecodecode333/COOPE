@@ -23,8 +23,8 @@ export const CommentList = ({ notice }: { notice: string }) => {
                             </Avatar>
                             <div className="speech-bubble">
                                 <div>{comment.author}</div>
-                                <div>{comment.content}</div>
-                                <div>{new Intl.DateTimeFormat('ko-KR', {
+                                <div className="font-medium">{comment.content}</div>
+                                <div className="font-semibold">{new Intl.DateTimeFormat('ko-KR', {
                                     year: 'numeric',
                                     month: '2-digit',
                                     day: '2-digit',

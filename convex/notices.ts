@@ -3,17 +3,6 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 
-export const createEmptyNotice = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const id = await ctx.db.insert("notices", {
-        author:"테스트1",
-        content: "테스트 내용입니다.",
-        title:"테스트 게시물1"
-    });
-    return id;
-  },
-});
 
 //글쓰기로 notice 작성 후 게시 눌렀을 때
 export const createNotice = mutation({
@@ -22,11 +11,12 @@ export const createNotice = mutation({
   storageId: v.optional(v.id("_storage")),
   author: v.string(),
   fileFormat: v.optional(v.string()),
-  fileName: v.optional(v.string())},
+  fileName: v.optional(v.string()),
+  authorId: v.string(),},
   
   handler: async (ctx, args) => {
-    const { title, content, author, storageId, fileFormat, fileName } = args;
-    const notice = await ctx.db.insert("notices",{ title, content, author, file: storageId, fileFormat, fileName});
+    const { title, content, author, storageId, fileFormat, fileName, authorId } = args;
+    const notice = await ctx.db.insert("notices",{ title, content, author, file: storageId, fileFormat, fileName, authorId});
     return notice;
   },
 });
@@ -47,6 +37,7 @@ export const getNoticeForComments = query({
   }
 })
 
+//게시글을 불러오기 위한 쿼리문
 export const getById = query({
   args: { id: v.string() },
   handler: async (ctx, args) => {
@@ -68,8 +59,26 @@ export const getById = query({
   },
 });
 
-
+//file 가져오기
 export const generateUploadUrl = mutation(async (ctx) => {
   return await ctx.storage.generateUploadUrl();
+})
+
+//notice 삭제 && 달려있는 댓글도 같이 삭제
+export const deleteNotice = mutation({
+  args: {noticeId: v.string()},
+  handler: async (ctx, args) => {
+    const id = ctx.db.normalizeId("notices", args.noticeId);
+    if(!id) {
+      return null;
+    }
+    await ctx.db.delete(id);
+
+    const comments = await ctx.db.query("comments").filter((q)=> q.eq(q.field("postId"), args.noticeId)).collect();
+
+    for(const comment of comments) {
+      await ctx.db.delete(comment._id);
+    }
+  }
 })
 

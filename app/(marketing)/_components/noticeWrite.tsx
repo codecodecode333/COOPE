@@ -61,6 +61,7 @@ const NewPost = () => {
         storageId,
         fileFormat,
         fileName,
+        authorId: user.id
       });
       setTitle('');
       setContent('');
@@ -89,7 +90,16 @@ const NewPost = () => {
   }
 
   const handleEmojiClick = (emojiObject: { emoji: string; }) => {
-    setContent(prevContent => prevContent + emojiObject.emoji);
+    setContent(prevContent => {
+      const maxLength = 10;
+      const emojiLength = 2;
+      if(prevContent.length <= maxLength || (prevContent.length >= maxLength && prevContent.length + emojiObject.emoji.length <= maxLength + emojiLength)) {
+        return prevContent+emojiObject.emoji;
+      }
+      else {
+        return prevContent;
+      }
+    });
   }
 
 
@@ -107,12 +117,13 @@ const NewPost = () => {
           required
         />
         <textarea
-          className="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none"
+          className="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none resize-none"
           placeholder="내용을 입력하세요."
           name="content"
           value={content}
           onChange={handleContnetChange}
           required
+          maxLength={500}
         />
 
         {/* icons */}
@@ -134,7 +145,7 @@ const NewPost = () => {
             </svg>
           </label>
           {selectedFile && <span className="text-sm text-gray-500">{selectedFile.name}</span>}
-          <div className="count ml-auto text-gray-400 text-xs font-semibold">0/300</div>
+          <div className="count ml-auto text-gray-400 text-xs font-semibold">최대 입력 가능 500자</div>
 
         </div>
         <EmojiPicker open={open} onEmojiClick={handleEmojiClick}/>
