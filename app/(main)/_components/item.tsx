@@ -17,19 +17,30 @@ import { useUser } from "@clerk/clerk-react"
 	
 
 interface ItemProps {
-  id?:Id<"documents">
-  documentIcon?:string
-  active?:boolean
-  expanded?:boolean
-  isSearch?:boolean
-  level?:number
-  onExpand?:() => void
-  label:string
-  onClick?:() => void
-  icon:LucideIcon
-}
+  id?:Id<"documents">;
+  documentIcon?:string;
+  active?:boolean;
+  expanded?:boolean;
+  isSearch?:boolean;
+  level?:number;
+  onExpand?:() => void;
+  label:string;
+  onClick?:() => void;
+  icon:LucideIcon;
+};
 
-export function Item ({id,label,onClick,icon:Icon,active,documentIcon,isSearch,level=0,onExpand,expanded}:ItemProps) {
+export function Item ({
+  id,
+  label,
+  onClick,
+  icon:Icon,
+  active,
+  documentIcon,
+  isSearch,
+  level=0,
+  onExpand,
+  expanded
+}:ItemProps) {
 
   const {user} = useUser()
   const router = useRouter()
@@ -49,12 +60,12 @@ export function Item ({id,label,onClick,icon:Icon,active,documentIcon,isSearch,l
     })
   }
 
-  const handleExpand = (event:React.MouseEvent<HTMLDivElement>) => {
+  const handleExpand = (event:React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation()
     onExpand?.()
   }
 
-  const onCreate = (event:React.MouseEvent<HTMLDivElement,MouseEvent>) => {
+  const onCreate = (event:React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation()
     if (!id) return
     const promise = create({title:"Untitled",parentDocument:id})
@@ -78,9 +89,15 @@ return (
     <div className={cn(`group min-h-[27px] text-sm py-1 pr-3 w-full hover:bg-primary/5
     flex items-center text-muted-foreground font-medium`,
     active && 'bg-primary/5 text-primary')}
-     onClick={onClick} role="button" style={{paddingLeft:level ? `${(level * 12) + 12}px` :'12px'}}>
+     onClick={onClick} 
+     role="button" 
+     style={{paddingLeft:level ? `${(level * 12) + 12}px` :'12px'}}
+    >
       {!!id && (
-        <div className="h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 mr-1" onClick={handleExpand} role="button">
+        <div className="h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 mr-1" 
+          onClick={handleExpand} 
+          role="button"
+        >
           <ChevronIcon className="w-4 h-4 shrink-0 text-muted-foreground/50"/>
         </div>
       )}
@@ -104,13 +121,21 @@ return (
       {!!id && (
         <div className="ml-auto flex items-center gap-x-2">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuTrigger asChild 
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="opacity-0 group-hover:opacity-100 h-full ml-auto rounded-sm
-              hover:bg-neutral-300 dark:hover:bg-neutral-600" role="button">
+              hover:bg-neutral-300 dark:hover:bg-neutral-600" 
+              role="button"
+              >
                 <MoreHorizontal className="w-4 h-4 text-muted-foreground"/>
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-60" align="start" side="right" forceMount>
+            <DropdownMenuContent className="w-60" 
+              align="start" 
+              side="right" 
+              forceMount
+            >
               <DropdownMenuItem onClick={onArchive}>
                 <Trash className="w-4 h-4 mr-2"/>
                 Delete
