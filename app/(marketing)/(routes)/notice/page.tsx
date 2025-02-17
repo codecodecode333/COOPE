@@ -145,7 +145,7 @@ const Notice = () => {
                 <div className="flex justify-end w-10/12">
                     {/* /admin 진입시 계정의 role이 admin이 아니면 홈화면으로 돌아가고, admin일 시 글쓰기 페이지로 진입 */}
                     <Link href="/admin">
-                        <Button className="">
+                        <Button>
                             글쓰기
                         </Button>
                     </Link>
