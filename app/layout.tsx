@@ -50,7 +50,7 @@ export default function RootLayout({
           storageKey="coope-theme-2"
           >
             <Toaster position="bottom-center" />
-          {children}
+            {children}
           </ThemeProvider>
         </ConvexClientProvider>
       </body>

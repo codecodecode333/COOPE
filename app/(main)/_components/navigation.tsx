@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronsLeft, MenuIcon, PlusCircle, Search, Settings } from "lucide-react";
+import { ChevronsLeft, MenuIcon, Plus, PlusCircle, Search, Settings, Trash } from "lucide-react";
 import { useRef, useState } from "react";
 import UserItem from "./user-item";
 import { useMutation } from "convex/react";
@@ -9,6 +9,14 @@ import { api } from "@/convex/_generated/api";
 import { Item } from "./item";
 import { toast } from "sonner";
 import { DocumentList } from "./document-list";
+import {useMediaQuery} from 'usehooks-ts'
+import {
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+} from "@/components/ui/popover";
+import { TrashBox } from "./trash-box";
+
 
 export const Navigation = () => {
     const create = useMutation(api.documents.create);
@@ -18,6 +26,7 @@ export const Navigation = () => {
     const [isResetting] = useState(false)
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const originalWidthRef = useRef<number>(240); // 원래 너비를 저장하는 ref
+    const isMobile = useMediaQuery("(max-width:768px)");
 
 
     const MIN_WIDTH = 210; // 최소 너비
@@ -132,6 +141,22 @@ export const Navigation = () => {
                 </div>
                 <div className="mt-4 text-white">
                     <DocumentList/>
+                    <Item
+                        onClick={handleCreate}
+                        label="Add a page"
+                        icon={Plus}
+                    />
+                    <Popover>
+                        <PopoverTrigger className="w-full mt-4">
+                            <Item label="Trash" icon={Trash} />
+                        </PopoverTrigger>
+                        <PopoverContent 
+                            className="p-0 w-72"
+                            side={isMobile ? "bottom" : "right"}
+                        >
+                            <TrashBox/>
+                        </PopoverContent>
+                    </Popover>
                 </div>
                 <div
                     onMouseDown={handleMouseDown}
