@@ -6,7 +6,7 @@ import { useMutation, useQuery } from "convex/react";
 import { SetStateAction, useState } from "react";
 
 export const CommentFrom = ({notice}: {notice: string}) => {
-    const [content, setContent] = useState('');
+    const [content, setContent] = useState(''); //처음에 comment로 했을 때 오류가 나서 얘가 문제 일줄 알고 이름 content로 바꿈 -> 근데 얘 이름은 문제가 아니었다
     const { user } = useUser();
     const addComment = useMutation(api.comments.addComment);
     const inputComment = (e: { target: { value: SetStateAction<string>; }; }) => {
@@ -31,6 +31,7 @@ export const CommentFrom = ({notice}: {notice: string}) => {
             await addComment({
                 content,
                 author: user?.username,
+                authorId: user?.id,
                 postId: notice, 
                 authorImgUrl: user?.imageUrl
             });
