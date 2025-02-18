@@ -26,6 +26,7 @@ const NoticePage = () => {
         return <p>공지사항 ID가 유효하지 않습니다.</p>
     }
     const notice = useQuery(api.notices.getById, { id: noticeId });
+ 
 
     if (notice === undefined) {
         return <p>로딩 중...</p>;
@@ -82,20 +83,26 @@ const NoticePage = () => {
                 {/* 작성자의 아이디와 현재 접속된 유저의 아이디가 같을 때만 나타나는 버튼*/}
                 {(notice.authorId === user?.id) &&
                     <div className="text-right my-2">
-                        <Link
+                        {/* <Link key={notice._id}
                             href={{
                                 pathname: '/noticeEditPage',
-                                query: { noticeId: notice._id },
-                        }}><Button variant="outline" className="mr-2">수정</Button></Link>
+                                query: { notice: JSON.stringify(notice) },
+                        }} */}
+                        <Link key={notice._id}
+                            href={{
+                                pathname: '/noticeEditPage',
+                                query: { noticeId: notice?._id },
+                        }}
+                        ><Button variant="outline" className="mr-2">수정</Button></Link>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button>삭제</Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>삭제하시겠습니까?</AlertDialogTitle>
+                                    <AlertDialogTitle>글을 삭제하시겠습니까?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        삭제된 게시글은 복구되지 않습니다. 신중하게 생각하고 삭제해주세요.
+                                        삭제된 글은 복구되지 않습니다. 신중하게 생각하고 삭제해주세요.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>

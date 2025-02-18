@@ -14,6 +14,7 @@ export default defineSchema({
   comments: defineTable({
     content: v.string(),
     author: v.string(),
+    authorId: v.string(),
     postId: v.string(),
     authorImgUrl: v.string(),
   }),

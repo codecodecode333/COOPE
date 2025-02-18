@@ -19,11 +19,12 @@ const noticeEdit = () => {
     const fileInput = useRef<HTMLInputElement>(null);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
+
     if (!noticeId) { //null 체크, 없어도 사이트 자체는 돌아가지만 IDE에서는 계속 오류라고 표시됨
             return <p>공지사항 ID가 유효하지 않습니다.</p>
     }
     const notice = useQuery(api.notices.getById, { id: noticeId });
-    
+
     
     if (notice === undefined) {
         return <p>로딩 중...</p>;
@@ -32,7 +33,6 @@ const noticeEdit = () => {
     if (!notice) {
         return <p>해당 공지사항을 찾을 수 없습니다.</p>;
     }
-
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -136,7 +136,7 @@ const noticeEdit = () => {
                     name="title"
                     onChange={(e) => setTitle(e.target.value)}
                     required
-                    defaultValue={notice?.title}
+                    defaultValue={notice.title}
                 />
                 <textarea
                     className="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none resize-none"
@@ -145,7 +145,7 @@ const noticeEdit = () => {
                     onChange={handleContnetChange}
                     required
                     maxLength={500}
-                    defaultValue={notice?.content}
+                    defaultValue={notice.content}
                 />
                 {/* icons */}
                 <div className="icons flex text-gray-500 m-2">
