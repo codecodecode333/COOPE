@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 //import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@clerk/clerk-react";
+import { SignOutButton, useUser } from "@clerk/clerk-react";
 
 function UserItem() {
   const { user } = useUser();
@@ -62,6 +62,11 @@ function UserItem() {
           </div>
         </div>
         <DropdownMenuSeparator />
+        <DropdownMenuItem className="w-full cursor-pointer text-muted-foreground" asChild>
+          <SignOutButton>
+            Log out
+          </SignOutButton>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

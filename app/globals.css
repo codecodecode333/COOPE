@@ -209,11 +209,9 @@ html, body {
   word-break: break-all;
 }
 
-.speech-bubble-dark {
-	position: relative;
-  padding: 1rem;
-	background: black;
-  width: 100%;
-	border-radius: .4em;
-  word-break: break-all;
+.div-faq-cs {
+  display: grid;
+  margin-top: 1rem;
+  grid-template-columns: auto auto;
+  align-items: center;
 }

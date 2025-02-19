@@ -1,7 +1,6 @@
-
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-
+import { Id } from "./_generated/dataModel";
 
 
 //글쓰기로 notice 작성 후 게시 눌렀을 때
@@ -64,21 +63,66 @@ export const generateUploadUrl = mutation(async (ctx) => {
   return await ctx.storage.generateUploadUrl();
 })
 
-//notice 삭제 && 달려있는 댓글도 같이 삭제
-export const deleteNotice = mutation({
-  args: {noticeId: v.string()},
-  handler: async (ctx, args) => {
-    const id = ctx.db.normalizeId("notices", args.noticeId);
-    if(!id) {
+//notice 수정
+export const updateNotice = mutation({
+  args: {
+    noticeId: v.id("notices"),
+    title: v.string(),
+    content: v.string(),
+    fileFormat: v.optional(v.string()),
+    fileName: v.optional(v.string()),
+    storageId: v.optional(v.id("_storage")),
+   },
+   handler: async (ctx, args) => {
+    if (!args.noticeId) {
       return null;
     }
+    const notice = await ctx.db.get(args.noticeId);
+
+    if (!notice) {
+      throw new Error("공지사항을 찾을 수 없습니다.");
+    }
+ 
+    if (notice.file && notice.file !==args.storageId) {
+      await ctx.storage.delete(notice.file);
+    }
+    
+    await ctx.db.patch(args.noticeId, {title: args.title, content: args.content, file: args.storageId, fileName: args.fileName, fileFormat: args.fileFormat});
+   }
+});
+
+//notice 삭제 && 달려있는 댓글 삭제
+export const deleteNotice = mutation({
+  args: { noticeId: v.string() },
+  handler: async (ctx, args) => {
+    const id = ctx.db.normalizeId("notices", args.noticeId);
+    if (!id) {
+      return null;
+    }
+
+    // 게시글 정보 가져오기
+    const notice = await ctx.db.get(id);
+    if (!notice) {
+      return null;
+    }
+
+    // 파일이 있다면 삭제
+    if (notice.file) {
+      await ctx.storage.delete(notice.file as Id<"_storage">);
+    }
+
+    // 게시글 삭제
     await ctx.db.delete(id);
 
-    const comments = await ctx.db.query("comments").filter((q)=> q.eq(q.field("postId"), args.noticeId)).collect();
+    // 댓글 삭제
+    const comments = await ctx.db
+      .query("comments")
+      .filter((q) => q.eq(q.field("postId"), args.noticeId))
+      .collect();
 
-    for(const comment of comments) {
+    for (const comment of comments) {
       await ctx.db.delete(comment._id);
     }
-  }
-})
+  },
+});
 

@@ -4,6 +4,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion"
+import { Button } from "@/components/ui/button";
 
 
 //자주 묻는 질문 내용
@@ -30,7 +31,12 @@ const FaqContent = () => {
                         Yes. It's animated by default, but you can disable it if you prefer.
                     </AccordionContent>
                 </AccordionItem>
+
             </Accordion>
+            <div className="div-faq-cs">
+                <span className="pr-1 font-medium">해결되지 않은 의문이 남아있으신가요?</span>
+                <Button>1:1 문의</Button>
+            </div>
         </div>
     );
 }

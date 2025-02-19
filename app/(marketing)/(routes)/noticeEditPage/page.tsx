@@ -19,13 +19,21 @@ const noticeEdit = () => {
     const fileInput = useRef<HTMLInputElement>(null);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
+    const updateNotice = useMutation(api.notices.updateNotice);
 
     if (!noticeId) { //null 체크, 없어도 사이트 자체는 돌아가지만 IDE에서는 계속 오류라고 표시됨
-            return <p>공지사항 ID가 유효하지 않습니다.</p>
+        return <p>공지사항 ID가 유효하지 않습니다.</p>
     }
+
     const notice = useQuery(api.notices.getById, { id: noticeId });
 
-    
+    useEffect(() => {
+        if (notice) {
+            setTitle(notice.title);
+            setContent(notice.content);
+        }
+    }, [notice]); //무한 렌더링 방지를 위해 필요. if를 통해 notice가 존재할 때만 렌더링 되도록 해줘야 null, undefined일 때의 무한 렌더링이 방지됨
+
     if (notice === undefined) {
         return <p>로딩 중...</p>;
     }
@@ -34,10 +42,10 @@ const noticeEdit = () => {
         return <p>해당 공지사항을 찾을 수 없습니다.</p>;
     }
 
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        
         if (!user) {
             alert('로그인이 필요합니다.');
             return;
@@ -52,10 +60,6 @@ const noticeEdit = () => {
             return;
         }
 
-        if (title.trim() === '' && content.trim() === '') {
-            alert('수정 사항이 없습니다.')
-            return;
-        }
         /*file storage 기능은 convex 공식문서를 참고, 이 기능이 베타 버전이라 공식 문서와 convex에서 제공하는 ai 밖에 참고할 게 없음
         file 저장방식 http action으로 변경이 필요할 수 있음 => 우선 업로드 url을 통한 방식으로 만들었지만 
         기존 파일 이름 등 유지를 위해 변경이 필요
@@ -75,16 +79,20 @@ const noticeEdit = () => {
                 fileFormat = selectedFile!.type;
                 storageId = uploadedStorageId;
                 fileName = selectedFile!.name;
-            }/*
-            await createNotice({
+            } else if (notice.file) {
+                // 기존 파일 정보 유지
+                storageId = notice.file;
+                fileFormat = notice.fileFormat;
+                fileName = notice.fileName;
+            }
+            await updateNotice({
                 title,
                 content,
-                author: user.username,
                 storageId,
                 fileFormat,
                 fileName,
-                authorId: user.id
-            });*/
+                noticeId: notice._id
+            });
             setTitle('');
             setContent('');
             setSelectedFile(null);
@@ -94,7 +102,7 @@ const noticeEdit = () => {
             router.push('/notice');
         } catch (error) {
             console.error('공지사항 작성 중 오류 발생:', error);
-            alert("공지사항 작성에 실패했습니다.");
+            alert("공지사항 수정에 실패했습니다.");
         }
     }
 
@@ -127,7 +135,6 @@ const noticeEdit = () => {
     return (
         <div>
             <div className="heading text-center font-bold text-2xl m-5">공지사항</div>
-            <h1 className="text-center text-red-500">아직 수정중이라 게시 눌러보지 마세요.</h1>
             <form onSubmit={handleSubmit} className="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl rounded-lg">
                 <input
                     className="title bg-gray-100 border border-gray-300 p-2 mb-4 outline-none"
@@ -136,7 +143,7 @@ const noticeEdit = () => {
                     name="title"
                     onChange={(e) => setTitle(e.target.value)}
                     required
-                    defaultValue={notice.title}
+                    value={title}
                 />
                 <textarea
                     className="description bg-gray-100 sec p-3 h-60 border border-gray-300 outline-none resize-none"
@@ -145,7 +152,7 @@ const noticeEdit = () => {
                     onChange={handleContnetChange}
                     required
                     maxLength={500}
-                    defaultValue={notice.content}
+                    value={content}
                 />
                 {/* icons */}
                 <div className="icons flex text-gray-500 m-2">
@@ -165,7 +172,8 @@ const noticeEdit = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                         </svg>
                     </label>
-                    {selectedFile && <span className="text-sm text-gray-500">{selectedFile.name}</span>}
+                    {!selectedFile && notice.fileName && <span className="text-sm text-gray-500 pt-1">{notice.fileName}</span>}
+                    {selectedFile && <span className="text-sm text-gray-500 pt-1">{selectedFile.name}</span>}
                     <div className="count ml-auto text-gray-400 text-xs font-semibold">최대 입력 가능 500자</div>
 
                 </div>
@@ -181,5 +189,5 @@ const noticeEdit = () => {
         </div>
     );
 }
- 
+
 export default noticeEdit;

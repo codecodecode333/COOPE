@@ -5,6 +5,10 @@ import { ChevronsLeft, MenuIcon, Plus, PlusCircle, Search, Settings, Trash } fro
 import { useRef, useState } from "react";
 import UserItem from "./user-item";
 import { useMutation } from "convex/react";
+
+import { useSearch } from "@/hooks/use-search";
+import { useSettings } from "@/hooks/use-settings";
+
 import { api } from "@/convex/_generated/api";
 import { Item } from "./item";
 import { toast } from "sonner";
@@ -27,6 +31,9 @@ export const Navigation = () => {
     const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const originalWidthRef = useRef<number>(240); // 원래 너비를 저장하는 ref
     const isMobile = useMediaQuery("(max-width:768px)");
+    
+    const search = useSearch();
+    const settings = useSettings();
 
 
     const MIN_WIDTH = 210; // 최소 너비
@@ -126,12 +133,12 @@ export const Navigation = () => {
                         label="Search"
                         icon={Search}
                         isSearch
-                        onClick={() => {}}
+                        onClick={search.onOpen}
                     />
                     <Item
                         label="Settings"
                         icon={Settings}
-                        onClick={() => {}}
+                        onClick={settings.onOpen}
                     />
                     <Item 
                         onClick={handleCreate} 
