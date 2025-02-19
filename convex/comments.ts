@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+
+//댓글 작성
 export const addComment = mutation({
   args:{ 
     content: v.string(),
@@ -15,6 +17,7 @@ export const addComment = mutation({
   },
 });
 
+//댓글 리스트 불러오기
 export const listComments = query({
   args:{
     id: v.string()
@@ -24,6 +27,7 @@ export const listComments = query({
   }
 });
 
+//댓글 삭제
 export const deleteComment = mutation({
   args: {commentId: v.id("comments") },
   handler: async (ctx, args) => {
@@ -31,6 +35,7 @@ export const deleteComment = mutation({
   }
 });
 
+//댓글 수정
 export const editComment = mutation({
   args: {id: v.id("comments"), content: v.string()},
   handler: async (ctx, args) => {
