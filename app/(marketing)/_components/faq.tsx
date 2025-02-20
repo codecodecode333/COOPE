@@ -5,6 +5,7 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 
 //자주 묻는 질문 내용
@@ -35,7 +36,7 @@ const FaqContent = () => {
             </Accordion>
             <div className="div-faq-cs">
                 <span className="pr-1 font-medium">해결되지 않은 의문이 남아있으신가요?</span>
-                <Button>1:1 문의</Button>
+               <Link href="/customerService"><Button>1:1 문의</Button></Link>
             </div>
         </div>
     );
