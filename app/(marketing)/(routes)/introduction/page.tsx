@@ -1,8 +1,26 @@
+"use client"
+
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { A11y, Navigation, Pagination, Scrollbar } from "swiper/modules";
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/pagination';
+import { useConvexAuth } from "convex/react";
+import { Button } from "@/components/ui/button";
+import { SignInButton } from "@clerk/clerk-react";
+
 
 const Introduction = () => {
+    const { isAuthenticated, isLoading } = useConvexAuth();
+    const pagination = {
+        clickable: true,
+        renderBullet: function (index: number, className: string) {
+            return '<span class="' + className + '">' + (index + 1) + '</span>';
+        },
+    };
     const teamMembers = [
         { id: 1, name: '김민재', role: '풀스택 개발', content: '팀 안전운전의 팀장 김민재입니다. 팀원 소개글의 1번입니다.' },
         { id: 2, name: '문제창', role: '풀스택 개발', content: '팀 안전운전의 팀원 문제창입니다. 팀원 소개글의 2번입니다.' },
@@ -33,16 +51,64 @@ const Introduction = () => {
                     height={300}
                     alt="사람"
                 />
-                
+
                 <div className="w-full px-56 flex-col">
                     <h2 className="text-right text-blue-500 pb-10 text-sm">Designed by Freepik</h2>
                     <h2 className="text-5xl text-start"><span className="text-blue-500">함께</span> 알아가고<br /> 창작하는 것을 돕습니다</h2>
                     <h2 className="text-start font-medium text-lg">간단한 글 작성을 위한 공간부터 다양한 사람들이 협업해야하는 공간까지 <br />
                         우리는 모든 것을 제공합니다.</h2>
+                    {isAuthenticated && !isLoading && (
+                        <div className="text-start my-2">
+                            <Button asChild className="shadow-lg mr-2">
+                                <Link href="/documents">
+                                    Coope 시작하기
+                                </Link>
+                            </Button>
+                            <Button variant="outline">무슨 기능을 추가할지 모르겠지만 일단 버튼</Button>
+                        </div>
+                    )}
+                    {!isAuthenticated && !isLoading && (
+                        <SignInButton mode="modal">
+                            <Button>
+                                Get Coope free
+                            </Button>
+                        </SignInButton>
+                    )}
+                    {/* carousel 나중에 고치기*/}    
+                    <Swiper
+                        modules={[Navigation, Pagination, Scrollbar, A11y]}
+                        spaceBetween={50}
+                        slidesPerView={1}
+                        navigation
+                        pagination={pagination}
+                        scrollbar={{ draggable: true }}
+                        onSwiper={(swiper) => console.log(swiper)}
+                        onSlideChange={() => console.log('slide change')}
+                        className="mt-5 shadow-2xl rounded-2xl"
+                    >
+                        <SwiperSlide>
+                            <Image src="/example1.png"
+                                width={1900}
+                                height={800}
+                                alt="샘플1"
+                                loading="lazy"
+                            />
+                        </SwiperSlide>
+                        <SwiperSlide>
+                            <Image src="/example2.png"
+                                width={1900}
+                                height={800}
+                                alt="샘플1"
+                                loading="lazy"
+                            />
+                        </SwiperSlide>
+                        <SwiperSlide>Slide 3</SwiperSlide>
+                        <SwiperSlide>Slide 4</SwiperSlide>
+                    </Swiper>
                     <h2 className="pt-10 text-4xl">팀원</h2>
                     <div className="grid grid-flow-col items-center justify-center">
                         {teamMembers.map((member) => (
-                            <div key={member.id} className="mt-20 mr-5 max-h-screen relative bg-white shadow-lg w-60 h-96 border-2 border-gray-500 flex items-center  flex-col hover:bg-blue-600 hover:text-white rounded-lg">
+                            <div key={member.id} className="mt-20 mr-5 max-h-screen relative shadow-lg w-60 h-96 border-2 border-gray-500 flex items-center  flex-col hover:bg-blue-600 hover:text-white rounded-lg">
                                 <div className="absolute -top-10">
                                     <Image src={"/universe.jpg"}
                                         className="h-24 w-24 rounded-full object-cover"

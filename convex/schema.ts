@@ -29,5 +29,16 @@ export default defineSchema({
     isPublished: v.boolean(),
   })
   .index("by_user", ["userId"])
-  .index("by_user_parent", ["userId","parentDocument"])
+  .index("by_user_parent", ["userId","parentDocument"]),
+  inquiryDetails: defineTable({
+    userId: v.string(),
+    userName: v.string(),
+    title: v.string(),
+    content: v.string()
+  }),
+  inquiryFiles: defineTable({
+    postId: v.id("inquiryDetails"),
+    file: v.id("_storage"),
+    fileFormat: v.optional(v.string())
+  })
 });
