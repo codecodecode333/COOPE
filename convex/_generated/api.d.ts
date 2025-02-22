@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as comments from "../comments.js";
 import type * as documents from "../documents.js";
+import type * as files from "../files.js";
 import type * as inquiries from "../inquiries.js";
 import type * as notices from "../notices.js";
 
@@ -29,6 +30,7 @@ import type * as notices from "../notices.js";
 declare const fullApi: ApiFromModules<{
   comments: typeof comments;
   documents: typeof documents;
+  files: typeof files;
   inquiries: typeof inquiries;
   notices: typeof notices;
 }>;
