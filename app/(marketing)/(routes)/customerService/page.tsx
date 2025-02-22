@@ -1,12 +1,15 @@
 "use client"
 
-import { Button } from "@/components/ui/button";
-import { PaginationContent, PaginationItem, PaginationPrevious, PaginationLink, PaginationEllipsis, PaginationNext, Pagination} from "@/components/ui/pagination";
-import { Table, TableCaption, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { api } from "@/convex/_generated/api";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/clerk-react";
 import { useQuery } from "convex/react";
+import { Button } from "@/components/ui/button";
+import { Table, TableCaption, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { PaginationContent, PaginationItem, PaginationPrevious, PaginationLink, PaginationEllipsis, PaginationNext, Pagination } from "@/components/ui/pagination";
 import Link from "next/link";
-import { useState } from "react";
+import { api } from "@/convex/_generated/api";
+import { useConvexAuth } from "convex/react";
 
 const formatDate = (timeStamp: string | number | Date) => {
     const date = new Date(timeStamp);
@@ -23,41 +26,39 @@ const formatDate = (timeStamp: string | number | Date) => {
 };
 
 const CustomerService = () => {
-    const inquiries = useQuery(api.inquiries.get);
-    const [currentPage, setCurrentPage] = useState<number>(1); //현재 페이지 1로 초기화
-    const noticesPerPage = 10; //페이지당 표시될 공지사항의 개수 
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const noticesPerPage = 10;
+    const { isAuthenticated } = useConvexAuth();
+    const { user } = useUser();
+    const router = useRouter();
 
-    /* 페이지네이션을 위해 데이터 슬라이스, notices의 (currentPage - 1) * noticesPerPage 부터 currentPage * noticesPerPage 까지 추출 
-        페이지1 (currentPage = 1)
-        - 시작 인덱스: (1-1) * 10 = 0
-        - 끝 인덱스: 1 * 10 = 10
-        notices.slice(0, 10) => notices 배열의 index 0 ~ 9 까지 슬라이스 됨
+    useEffect(() => {
+        if (!user?.id) {
+            return;
+        }
+    }, [user, router]);
 
-        페이지2 (currentPage = 2)
-        - 시작 인덱스: (2-1) * 10 = 10
-        - 끝 인덱스: 2 * 10 = 20
-        notices.slice(10, 20) => notices 배열의 index 10 ~ 19 까지 슬라이스
-    */
+    const inquiries = useQuery(api.inquiries.get, { userId: user?.id });
+
     const paginatedNotices = inquiries ? inquiries.slice((currentPage - 1) * noticesPerPage, currentPage * noticesPerPage) : [];
 
-    // 페이지 수 계산, Math.ceil: 소수점 이하를 올림함
     const pageCount = inquiries ? Math.ceil(inquiries.length / noticesPerPage) : 1;
 
-    // 최신순으로 정렬
     if (inquiries !== undefined) {
         inquiries.sort((a, b) => new Date(b._creationTime).getTime() - new Date(a._creationTime).getTime());
     }
 
-    /* 
-     SetStateAction에 대한 설명은 찾아보면 많이 나오지만, 여기서 pageNumber: React.SetStateAction<Number>를 사용한 이유는 
-     pageNumber prop을 단순히 pageNumber: number로 타입을 지정하면 함수로 상태를 업데이트할 수 없음. 오직 숫자로만 가능
-     setStateAction을 통해 타입을 지정하면 숫자, 함수를 통해 상태를 업데이트 할 수 있음
-     handlePageChange(Math.max(currentPage - 1, 1))처럼 함수를 값으로 받아오기 위해 이런 타입지정이 필요함
-    */
-
     const handlePageChange = (pageNumber: React.SetStateAction<number>) => {
         setCurrentPage(pageNumber);
     };
+
+    const handleInquiryButton = () => {
+        if (!isAuthenticated) {
+            alert('문의를 작성하기 위해선 로그인을 해야합니다.');
+            return;
+        }
+        router.push("/inquiryWrite");
+    }
 
     return (
         <div className="min-h-full flex flex-col">
@@ -81,18 +82,18 @@ const CustomerService = () => {
                                         <TableHead className="text-right">날짜</TableHead>
                                     </TableRow>
                                 </TableHeader>
-                                {paginatedNotices.map((notice, index) => (
-                                    <TableBody key={notice._id} className="font-semibold">
+                                {paginatedNotices.map((inquiry, index) => (
+                                    <TableBody key={inquiry._id} className="font-semibold">
                                         <TableRow>
                                             <TableCell className="text-left">{inquiries.length - (currentPage - 1) * noticesPerPage - index}</TableCell>
                                             <TableCell className="text-left">
                                                 <Link className="cursor-pointer" href={{
                                                     pathname: "/noticePage",
-                                                    query: { noticeId: notice._id },
-                                                }}>{notice.title}</Link>
+                                                    query: { noticeId: inquiry._id },
+                                                }}>{inquiry.title}</Link>
                                             </TableCell>
-                                            <TableCell className="text-left">{notice.userName}</TableCell>
-                                            <TableCell className="text-right">{formatDate(notice._creationTime)}</TableCell>
+                                            <TableCell className="text-left">{inquiry.userName}</TableCell>
+                                            <TableCell className="text-right">{formatDate(inquiry._creationTime)}</TableCell>
                                         </TableRow>
                                     </TableBody>
                                 ))}
@@ -125,16 +126,13 @@ const CustomerService = () => {
                 </div>
 
                 <div className="flex justify-end w-10/12">
-                    {/* /admin 진입시 계정의 role이 admin이 아니면 홈화면으로 돌아가고, admin일 시 글쓰기 페이지로 진입 */}
-                    <Link href="/inquiryWrite">
-                        <Button>
-                            문의 작성
-                        </Button>
-                    </Link>
+                    <Button onClick={handleInquiryButton}>
+                        문의 작성
+                    </Button>
                 </div>
             </div>
         </div>
     );
 }
- 
+
 export default CustomerService;
