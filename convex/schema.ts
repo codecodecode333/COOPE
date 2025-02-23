@@ -39,6 +39,7 @@ export default defineSchema({
   inquiryFiles: defineTable({
     postId: v.id("inquiryDetails"),
     file: v.id("_storage"),
-    fileFormat: v.optional(v.string())
+    fileFormat: v.string(),
+    fileName: v.string()
   })
 });

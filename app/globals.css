@@ -240,3 +240,15 @@ html, body {
   object-fit: cover;
 }
 
+.files.box {
+  display: grid;
+  grid-template-columns: auto auto;
+}
+
+.previews {
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+}
+.preview-box {
+  margin: 1rem;
+}
