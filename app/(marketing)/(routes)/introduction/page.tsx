@@ -52,7 +52,7 @@ const Introduction = () => {
                     alt="사람"
                 />
 
-                <div className="w-full px-56 flex-col">
+                <div className="w-full px-56 flex-col tracking-in-expand">
                     <h2 className="text-right text-blue-500 pb-10 text-sm">Designed by Freepik</h2>
                     <h2 className="text-5xl text-start"><span className="text-blue-500">함께</span> 알아가고<br /> 창작하는 것을 돕습니다</h2>
                     <h2 className="text-start font-medium text-lg">간단한 글 작성을 위한 공간부터 다양한 사람들이 협업해야하는 공간까지 <br />
@@ -68,13 +68,16 @@ const Introduction = () => {
                         </div>
                     )}
                     {!isAuthenticated && !isLoading && (
-                        <SignInButton mode="modal">
-                            <Button>
-                                Get Coope free
-                            </Button>
-                        </SignInButton>
+                        <div className="text-start my-2">
+                            <SignInButton mode="modal">
+                                <Button>
+                                    Get Coope free
+                                </Button>
+                            </SignInButton>
+                            <Button variant="outline">무슨 기능을 추가할지 모르겠지만 일단 버튼</Button>
+                        </div>
                     )}
-                    {/* carousel 나중에 고치기*/}    
+                    {/* carousel 나중에 고치기*/}
                     <Swiper
                         modules={[Navigation, Pagination, Scrollbar, A11y]}
                         spaceBetween={50}
