@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
@@ -10,7 +10,6 @@ import CommentList from "../../_components/commentList";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { deleteNotice } from "@/convex/notices";
 
 /*
     Next Js 13v 이후부터는 useRouter등의 기능을 next/routes가 아니라 next/navigation에서 가져와야한다.. 이걸 몰라서 고생했다
@@ -18,6 +17,7 @@ import { deleteNotice } from "@/convex/notices";
 */
 const NoticePage = () => {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const noticeId = searchParams.get("noticeId"); // 공지사항 ID로 데이터를 가져옴
     const deleteNotice = useMutation(api.notices.deleteNotice);
     const { user } = useUser();
@@ -43,6 +43,7 @@ const NoticePage = () => {
             await deleteNotice({
                 noticeId: noticeId
             });
+            router.push("/notice");
         } catch (error) {
             console.log("에러..임");
         }

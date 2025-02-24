@@ -252,3 +252,17 @@ html, body {
 .preview-box {
   margin: 1rem;
 }
+
+.grid-col-3 {
+  display: grid;
+  grid-template-columns: auto auto auto;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
