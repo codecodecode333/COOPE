@@ -34,12 +34,13 @@ export default defineSchema({
     userId: v.string(),
     userName: v.string(),
     title: v.string(),
-    content: v.string()
+    content: v.string(),
+    category: v.string(),
+    environment: v.string()
   }),
   inquiryFiles: defineTable({
     postId: v.id("inquiryDetails"),
     file: v.id("_storage"),
-    fileFormat: v.string(),
     fileName: v.string()
   })
 });

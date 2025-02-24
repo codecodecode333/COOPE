@@ -8,6 +8,10 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { BadgeX } from 'lucide-react';
 import Image from "next/image";
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import React from "react";
 const InquiryWrite = () => {
 
   const [title, setTitle] = useState("");
@@ -19,8 +23,9 @@ const InquiryWrite = () => {
   const [previews, setPreviews] = useState<string[]>([]);
   const generateUploadUrl = useMutation(api.inquiries.generateUploadUrl); //convex에서 file을 저장하기 위해서 필요한 uploadUrl
   const createInquiry = useMutation(api.inquiries.createInquiry); //작성된 문의 사항 저장을 위한 쿼리문
-
-  console.log(selectedFiles);
+  const [category, setCategory] = useState("기타");
+  const [environment, setEnvironment] = useState("PC");
+  //console.log(selectedFiles); //파일들 맞게 들어가는지 확인용
 
   //취소 클릭시 redirect 시키기
   const redirectCS = () => {
@@ -40,18 +45,20 @@ const InquiryWrite = () => {
     const maxFiles = 3;
     const maxFileSizeMB = 20;
 
+    
     let validFiles = [];
     let totalFiles = selectedFiles.length;
 
     for (const file of files) {
-      if (totalFiles >= maxFiles) {
-        alert(`파일은 최대 ${maxFiles}개까지 선택할 수 있습니다.`);
-        break;
-      }
       if (file.size / 1024 / 1024 > maxFileSizeMB) {
         alert(`${file.name} 파일은 20MB를 초과합니다.`);
         continue;
       }
+      if (totalFiles >= maxFiles) {
+        alert(`파일은 최대 ${maxFiles}개까지 선택할 수 있습니다.`);
+        break;
+      }
+      
       validFiles.push(file);
       totalFiles++;
     }
@@ -79,7 +86,7 @@ const InquiryWrite = () => {
     e.preventDefault();
 
     if (!user) {
-      alert('로그인이 필요합니다.');
+      alert('문의를 작성하기 위해선 로그인이 필요합니다.');
       return;
     }
     if (!user.username) {
@@ -99,7 +106,6 @@ const InquiryWrite = () => {
         return {
           storageId,
           fileName: file.name,
-          fileFormat: file.type,
         };
       });
 
@@ -112,6 +118,8 @@ const InquiryWrite = () => {
         content,
         userId: user.id,
         userName: user.username,
+        category,
+        environment,
         files,
       });
 
@@ -134,9 +142,9 @@ const InquiryWrite = () => {
   return (
     <div>
       <div className="heading text-center font-bold text-4xl m-5">문의</div>
-      <form onSubmit={handleSubmit} className="editor mx-auto w-10/12 flex flex-col text-gray-800 border border-gray-300 p-4 shadow-lg max-w-2xl rounded-lg">
+      <form onSubmit={handleSubmit} className="editor mx-auto w-10/12 flex flex-col border border-gray-300 p-4 shadow-lg max-w-2xl rounded-lg">
         <input
-          className="title border border-gray-300 p-2 mb-4 outline-none"
+          className="title border border-gray-300 p-2 mb-4 outline-none font-medium"
           placeholder="제목"
           type="text"
           name="title"
@@ -144,10 +152,38 @@ const InquiryWrite = () => {
           onChange={handleTitleChange}
           required
         />
-        <span className="font-light text-gray-500 text-sm">- 오류가 발생한 상황이나, 궁금한 사항에 대해 상세하게 작성해주세요</span>
-        <span className="font-light text-gray-500 text-sm">- 상황에 대한 스크린샷을 함께 첨부해주시면 답변에 큰 도움이 됩니다</span>
+        <span className="font-normal">문의 유형</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">{category}</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel>문의 유형</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup value={category} onValueChange={setCategory}>
+              <DropdownMenuRadioItem value="계정문의">계정 문의</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="오류문의">오류 문의</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="건의사항">건의사항</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="기타">기타</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+          
+        </DropdownMenu>
+        <span className="font-normal mt-2">발생 환경</span>
+        <RadioGroup defaultValue={environment} className="grid-col-2 w-1/5 mb-2" onValueChange={setEnvironment}>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="모바일" id="r1" />
+            <Label htmlFor="r1">모바일</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="PC" id="r2" />
+            <Label htmlFor="r2">PC</Label>
+          </div>
+        </RadioGroup>
+        <span className="font-light text-base">- 오류가 발생한 상황이나, 궁금한 사항에 대해 상세하게 작성해주세요</span>
+        <span className="font-light text-base">- 상황에 대한 스크린샷을 함께 첨부해주시면 답변에 큰 도움이 됩니다</span>
         <textarea
-          className="description sec mt-4 p-3 h-60 border border-gray-300 outline-none resize-none"
+          className="description sec mt-4 p-3 h-60 border border-gray-300 outline-none resize-none font-medium"
           placeholder="문의 내용을 입력하세요."
           name="content"
           value={content}
@@ -160,6 +196,7 @@ const InquiryWrite = () => {
           <input
             type="file"
             ref={fileInput}
+            accept="image/*"
             multiple
             className="hidden"
             onChange={handleFileChange}

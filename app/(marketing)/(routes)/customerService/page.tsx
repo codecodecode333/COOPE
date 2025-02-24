@@ -88,8 +88,8 @@ const CustomerService = () => {
                                             <TableCell className="text-left">{inquiries.length - (currentPage - 1) * noticesPerPage - index}</TableCell>
                                             <TableCell className="text-left">
                                                 <Link className="cursor-pointer" href={{
-                                                    pathname: "/noticePage",
-                                                    query: { noticeId: inquiry._id },
+                                                    pathname: "/inquiryPage",
+                                                    query: { inquiryId: inquiry._id },
                                                 }}>{inquiry.title}</Link>
                                             </TableCell>
                                             <TableCell className="text-left">{inquiry.userName}</TableCell>

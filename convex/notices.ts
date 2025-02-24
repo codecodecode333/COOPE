@@ -58,7 +58,7 @@ export const getById = query({
   },
 });
 
-//file 가져오기
+//file storage 가져오기
 export const generateUploadUrl = mutation(async (ctx) => {
   return await ctx.storage.generateUploadUrl();
 })
