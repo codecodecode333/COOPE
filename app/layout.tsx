@@ -1,24 +1,17 @@
-import {
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton
-} from '@clerk/clerk-react'
+
 import { Toaster } from "sonner";
 import "./globals.css";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ConvexClientProvider } from "@/components/providers/convex-provider";
-import { ModalProvider } from '@/components/providers/modal-provider';
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import localFont from 'next/font/local'
+import { ModalProvider } from "@/components/providers/modal-provider";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const pretendard = localFont({
+  src: "../public/fonts/PretendardVariable.woff2",
+  display: "swap",
+  weight: "45 920",
+  variable: "--font-pretendard"
 });
 
 export const metadata: Metadata = {
@@ -46,8 +39,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body //className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+    <html lang="ko" suppressHydrationWarning>
+      <body className={`${pretendard.variable} font-pretendard font-bold`}
       >
         <ConvexClientProvider>
           <ThemeProvider
