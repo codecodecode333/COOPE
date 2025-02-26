@@ -90,7 +90,7 @@ const CustomerService = () => {
                                                 <Link className="cursor-pointer" href={{
                                                     pathname: "/inquiryPage",
                                                     query: { inquiryId: inquiry._id },
-                                                }}>{inquiry.title}</Link>
+                                                }}>{inquiry.responseStatus && <span className="text-blue-700">[답변완료] </span>}{inquiry.title}</Link>
                                             </TableCell>
                                             <TableCell className="text-left">{inquiry.userName}</TableCell>
                                             <TableCell className="text-right">{formatDate(inquiry._creationTime)}</TableCell>

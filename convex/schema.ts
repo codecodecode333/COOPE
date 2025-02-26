@@ -36,10 +36,19 @@ export default defineSchema({
     title: v.string(),
     content: v.string(),
     category: v.string(),
-    environment: v.string()
+    environment: v.string(),
+    responseStatus: v.optional(v.boolean())
   }),
   inquiryFiles: defineTable({
     postId: v.id("inquiryDetails"),
+    file: v.id("_storage"),
+    fileName: v.string()
+  }),
+  inquiryAnswer: defineTable ({
+    answer: v.string()
+  }),
+  inquiryAnswerFiles: defineTable({
+    postId: v.id("inquiryAnswer"),
     file: v.id("_storage"),
     fileName: v.string()
   })
