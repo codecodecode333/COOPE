@@ -99,3 +99,33 @@ export const deleteInquiry = mutation({
 
     }
 })
+
+//문의 답변
+export const answerInquiry = mutation({
+    args: { content: v.string(),
+        inquiryId: v.string(),
+        files: v.array(v.object({
+            storageId: v.id("_storage"),
+            fileName: v.string(),
+          }))
+        },
+    handler: async (ctx, args) => {
+        const answer = await ctx.db.insert("inquiryAnswer", { answer: args.content });
+        const id = await ctx.db.normalizeId("inquiryDetails", args.inquiryId);
+        if (!id){
+            return;
+        } 
+        await ctx.db.patch(id, { responseStatus : true});
+
+        for (const file of args.files) {
+            await ctx.db.insert("inquiryAnswerFiles", {
+                postId: answer,
+                file: file.storageId,
+                fileName: file.fileName
+            })
+        }
+        
+        return answer;
+
+    }
+})

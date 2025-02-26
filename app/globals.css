@@ -258,6 +258,26 @@ html, body {
   grid-template-columns: auto auto auto;
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(43, 43, 43, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 60;
+}
+.modal-content {
+  background: white;
+  padding: 10rem;
+  border-radius: 2rem;
+  position: relative;
+}
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

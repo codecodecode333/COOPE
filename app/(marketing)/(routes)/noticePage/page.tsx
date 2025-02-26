@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
-import { CommentFrom } from "../../_components/commentForm";
+import { CommentForm } from "../../_components/commentForm";
 import CommentList from "../../_components/commentList";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
@@ -114,7 +114,7 @@ const NoticePage = () => {
                         </AlertDialog>
                     </div>
                 }
-                <CommentFrom notice={noticeId} />
+                <CommentForm notice={noticeId} />
                 <CommentList notice={noticeId} />
             </div>
         </div>

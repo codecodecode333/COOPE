@@ -7,6 +7,9 @@ import { useMutation, useQuery } from "convex/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import AnswerWrite from "../../_components/answerWrite";
+
 
 
 
@@ -16,13 +19,15 @@ const InquiryPage = () => {
     const inquiryId = searchParams.get("inquiryId");
     const { user } = useUser();
     const deleteInquiry = useMutation(api.inquiries.deleteInquiry);
-
+    const userRole = user?.publicMetadata?.role
+    const [isanswerOpen, setIsanswerOpen] = useState(false);
+    console.log(user?.emailAddresses[0].emailAddress);
     if (!inquiryId) {
         return <p>문의 사항 ID가 유효하지 않습니다.</p>
     }
     const inquiry = useQuery(api.inquiries.getInquiry, { id: inquiryId });
 
-    
+
     if (inquiry === undefined) {
         return <p>로딩중 ..</p>;
     }
@@ -30,7 +35,7 @@ const InquiryPage = () => {
     if (!inquiry) {
         return <p>문의 사항이 존재하지 않습니다.</p>;
     }
-    if(user?.id !== inquiry?.userId){
+    if (user?.id !== inquiry?.userId) {
         return <p>타인이 작성한 문의는 볼 수 없습니다.</p>
     }
 
@@ -45,6 +50,15 @@ const InquiryPage = () => {
             console.log("에러..임");
         }
     }
+
+    const handleAnswer = (e: any) => {
+        if(!isanswerOpen) {
+            setIsanswerOpen(true);
+        }
+        else setIsanswerOpen(false);
+    }
+
+    const answerClose = () => {setIsanswerOpen(false)};
 
     return (
         <div className="mx-12 min-h-full flex justify-center py-10">
@@ -71,28 +85,30 @@ const InquiryPage = () => {
                     {inquiry?.content}
                 </div>
                 <div className="grid-col-3">
-                {inquiry.files && inquiry.files.map((file) =>
-                    <div key={file._id}>
-                        <h1 className="font-medium">{file.fileName}</h1>
-                        {file.url && <Image loading="lazy" src={file.url} alt="첨부 이미지" width={500} height={500} />}
-                    </div>
+                    {inquiry.files && inquiry.files.map((file) =>
+                        <div key={file._id}>
+                            <h1 className="font-medium">{file.fileName}</h1>
+                            {file.url &&
+                                <Link href={file.url} rel="noopener noreferrer" target="_blank">
+                                    <Image
+                                        loading="lazy"
+                                        src={file.url}
+                                        alt="첨부 이미지"
+                                        width={500}
+                                        height={500}
+                                        style={{ cursor: 'pointer' }}
+                                    /></Link>}
+                            {/*<ImageModal isOpen={isModalOpen} onClose={handleCloseModal} imageUrl={currentImageUrl}></ImageModal>*/}
+                        </div>
 
-                )}
+                    )}
                 </div>
+
                 {/* 작성자의 아이디와 현재 접속된 유저의 아이디가 같을 때만 나타나는 버튼*/}
                 {(inquiry.userId === user?.id) &&
                     <div className="text-right my-2">
-                        {/* <Link key={inquiry._id}
-                            href={{
-                                pathname: '/inquiryEditPage',
-                                query: { inquiry: JSON.stringify(inquiry) },
-                        }} */}
-                        <Link key={inquiry._id}
-                            href={{
-                                pathname: '/inquiryEditPage',
-                                query: { inquiryId: inquiry?._id },
-                            }}
-                        ><Button variant="outline" className="mr-2">수정</Button></Link>
+                        {userRole === 'admin' &&
+                        <Button variant="outline" className="mr-2" onClick={handleAnswer}>답변</Button>}
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button>삭제</Button>
@@ -112,6 +128,7 @@ const InquiryPage = () => {
                         </AlertDialog>
                     </div>
                 }
+                {isanswerOpen && <AnswerWrite inquiry={inquiryId} onClose={answerClose}/>}
             </div>
         </div>
     );
