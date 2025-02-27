@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import AnswerWrite from "../../_components/answerWrite";
+import AnswerList from "../../_components/answers";
 
 
 
@@ -21,7 +22,6 @@ const InquiryPage = () => {
     const deleteInquiry = useMutation(api.inquiries.deleteInquiry);
     const userRole = user?.publicMetadata?.role
     const [isanswerOpen, setIsanswerOpen] = useState(false);
-    console.log(user?.emailAddresses[0].emailAddress);
     if (!inquiryId) {
         return <p>문의 사항 ID가 유효하지 않습니다.</p>
     }
@@ -35,7 +35,7 @@ const InquiryPage = () => {
     if (!inquiry) {
         return <p>문의 사항이 존재하지 않습니다.</p>;
     }
-    if (user?.id !== inquiry?.userId) {
+    if (user?.id !== inquiry?.userId && userRole !== 'admin') {
         return <p>타인이 작성한 문의는 볼 수 없습니다.</p>
     }
 
@@ -45,7 +45,12 @@ const InquiryPage = () => {
             await deleteInquiry({
                 inquiryId: inquiry._id
             });
-            router.push("/customerService");
+
+            if(userRole !== 'admin') {
+                router.push("/customerService")
+            } else {
+                router.push("/csAdmin");
+            }
         } catch (error) {
             console.log("에러..임");
         }
@@ -105,7 +110,7 @@ const InquiryPage = () => {
                 </div>
 
                 {/* 작성자의 아이디와 현재 접속된 유저의 아이디가 같을 때만 나타나는 버튼*/}
-                {(inquiry.userId === user?.id) &&
+                {(inquiry.userId === user?.id || userRole === 'admin') &&
                     <div className="text-right my-2">
                         {userRole === 'admin' &&
                         <Button variant="outline" className="mr-2" onClick={handleAnswer}>답변</Button>}
@@ -128,7 +133,9 @@ const InquiryPage = () => {
                         </AlertDialog>
                     </div>
                 }
-                {isanswerOpen && <AnswerWrite inquiry={inquiryId} onClose={answerClose}/>}
+                {isanswerOpen && <AnswerWrite inquiry={inquiryId} onClose={answerClose} userEmail={inquiry.userEmail} userName={inquiry.userName}/>}
+                <div><h2 className="text-2xl font-medium">답변</h2></div>
+                <AnswerList postId={inquiryId} />
             </div>
         </div>
     );

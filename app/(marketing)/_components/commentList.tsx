@@ -30,8 +30,6 @@ export const CommentList = ({ notice }: { notice: string }) => {
     const handleEditButtonClick = (id: GenericId<"comments">, content: string, e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
         setCommentIdToEdit(id);
         setCommentEdit(content);
-        console.log(id);
-        console.log(content);
     }
 
     const editComment = (e: { target: { value: SetStateAction<string>; }; }) => {

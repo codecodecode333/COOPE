@@ -1,20 +1,22 @@
 "use client"
 import { Button } from "@/components/ui/button";
-import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { FC, SetStateAction, useRef, useState } from "react";
 import { BadgeX } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { sendEmail } from "@/lib/action";
 
 interface AnswerWriteProps {
     inquiry: string;
     onClose: () => void;
+    userEmail: string;
+    userName: string;
 }
 
-export const AnswerWrite: FC<AnswerWriteProps> = ({ inquiry, onClose }) => {
-    const [content, setContent] = useState('');
+export const AnswerWrite: FC<AnswerWriteProps> = ({ inquiry, onClose, userEmail, userName }) => {
+    const [content, setContent] = useState(userName + "님, 안녕하세요☺️ 문의 주신 사항 답변 드립니다.");
     const { user } = useUser();
     const fileInput = useRef<HTMLInputElement>(null);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -25,7 +27,7 @@ export const AnswerWrite: FC<AnswerWriteProps> = ({ inquiry, onClose }) => {
         setContent(e.target.value);
     }
 
-    const handleComment = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleAnswer = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!user) {
             alert('로그인이 필요합니다.');
@@ -56,8 +58,12 @@ export const AnswerWrite: FC<AnswerWriteProps> = ({ inquiry, onClose }) => {
             await answerInquiry({
                 content,
                 inquiryId: inquiry,
-                files
+                files,
+                authorId: user?.id
             })
+            console.log(selectedFiles);
+            //답변 등록될 때 답변이 mail로도 가도록 구현
+            await sendEmail(userEmail, content);
             setContent('');
             setSelectedFiles([]);
             setPreviews([]);
@@ -66,10 +72,10 @@ export const AnswerWrite: FC<AnswerWriteProps> = ({ inquiry, onClose }) => {
                 fileInput.current.value = '';
             }
 
-            onClose
+            onClose();
 
         } catch (error) {
-            console.error('답변변 작성 중 오류 발생:', error);
+            console.error('답변 작성 중 오류 발생:', error);
             alert("답변 작성에 실패했습니다.");
         }
     }
@@ -116,7 +122,7 @@ export const AnswerWrite: FC<AnswerWriteProps> = ({ inquiry, onClose }) => {
 
     return (
         <div className="flex flex-col w-full space-y-2">
-            <form onSubmit={handleComment} className="flex flex-col gap-2 w-full">
+            <form onSubmit={handleAnswer} className="flex flex-col gap-2 w-full">
                 <div className="h-full w-full">
                     <textarea
                         name="content"
@@ -124,7 +130,7 @@ export const AnswerWrite: FC<AnswerWriteProps> = ({ inquiry, onClose }) => {
                         onChange={inputComment}
                         placeholder="답변을 입력해주세요"
                         required
-                        className="h-full w-full comment-textarea"
+                        className="h-full w-full comment-textarea font-medium"
                         style={{ height: '150px' }} // Adjust the height value here
                         maxLength={200}
                     />

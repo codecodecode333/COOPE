@@ -25,11 +25,17 @@ const InquiryWrite = () => {
   const createInquiry = useMutation(api.inquiries.createInquiry); //작성된 문의 사항 저장을 위한 쿼리문
   const [category, setCategory] = useState("기타");
   const [environment, setEnvironment] = useState("PC");
+  const userRole = user?.publicMetadata?.role
   //console.log(selectedFiles); //파일들 맞게 들어가는지 확인용
 
   //취소 클릭시 redirect 시키기
   const redirectCS = () => {
-    router.push('/customerService');
+    if (userRole !== 'admin') {
+      router.push('/customerService');
+    }
+    else {
+      router.push('/csAdmin');
+    }
   };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +51,7 @@ const InquiryWrite = () => {
     const maxFiles = 3;
     const maxFileSizeMB = 20;
 
-    
+
     let validFiles = [];
     let totalFiles = selectedFiles.length;
 
@@ -58,7 +64,7 @@ const InquiryWrite = () => {
         alert(`파일은 최대 ${maxFiles}개까지 선택할 수 있습니다.`);
         break;
       }
-      
+
       validFiles.push(file);
       totalFiles++;
     }
@@ -118,6 +124,7 @@ const InquiryWrite = () => {
         content,
         userId: user.id,
         userName: user.username,
+        userEmail: user.emailAddresses[0].emailAddress,
         category,
         environment,
         files,
@@ -132,7 +139,11 @@ const InquiryWrite = () => {
         fileInput.current.value = '';
       }
 
-      router.push('/customerService');
+      if(userRole !== 'admin') {
+        router.push('/customerService')
+      } else {
+        router.push('/csAdmin');
+      }
     } catch (error) {
       console.error('문의 작성 중 오류 발생:', error);
       alert("문의 작성에 실패했습니다.");
@@ -167,7 +178,7 @@ const InquiryWrite = () => {
               <DropdownMenuRadioItem value="기타">기타</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
-          
+
         </DropdownMenu>
         <span className="font-normal mt-2">발생 환경</span>
         <RadioGroup defaultValue={environment} className="grid-col-2 w-1/5 mb-2" onValueChange={setEnvironment}>
@@ -182,6 +193,7 @@ const InquiryWrite = () => {
         </RadioGroup>
         <span className="font-light text-base">- 오류가 발생한 상황이나, 궁금한 사항에 대해 상세하게 작성해주세요</span>
         <span className="font-light text-base">- 상황에 대한 스크린샷을 함께 첨부해주시면 답변에 큰 도움이 됩니다</span>
+        <span className="font-light text-base">- 답변은 문의내 갱신될 뿐만 아니라, 메일로 함께 전송됩니다</span>
         <textarea
           className="description sec mt-4 p-3 h-60 border border-gray-300 outline-none resize-none font-medium"
           placeholder="문의 내용을 입력하세요."
