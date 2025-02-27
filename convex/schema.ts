@@ -32,12 +32,13 @@ export default defineSchema({
   .index("by_user_parent", ["userId","parentDocument"]),
   inquiryDetails: defineTable({
     userId: v.string(),
-    userName: v.string(),
+    userName: v.string(), 
     title: v.string(),
     content: v.string(),
     category: v.string(),
     environment: v.string(),
-    responseStatus: v.optional(v.boolean())
+    responseStatus: v.optional(v.boolean()),
+    userEmail: v.string(),
   }),
   inquiryFiles: defineTable({
     postId: v.id("inquiryDetails"),
@@ -45,7 +46,9 @@ export default defineSchema({
     fileName: v.string()
   }),
   inquiryAnswer: defineTable ({
-    answer: v.string()
+    answer: v.string(),
+    postId: v.string(),
+    authorId: v.string()
   }),
   inquiryAnswerFiles: defineTable({
     postId: v.id("inquiryAnswer"),

@@ -24,6 +24,7 @@ import {
     PaginationNext,
     PaginationEllipsis,
 } from "@/components/ui/pagination";
+import { useUser } from "@clerk/clerk-react";
 
 const formatDate = (timeStamp: string | number | Date) => {
     const date = new Date(timeStamp);
@@ -43,7 +44,9 @@ const Notice = () => {
     // notices 테이블에서 데이터 가져옴.
     const notices = useQuery(api.notices.get);
     const [currentPage, setCurrentPage] = useState<number>(1); //현재 페이지 1로 초기화
-    const noticesPerPage = 10; //페이지당 표시될 공지사항의 개수 
+    const noticesPerPage = 10; //페이지당 표시될 공지사항의 개수
+    const { user } = useUser();
+    const userRole = user?.publicMetadata?.role;
 
     /* 페이지네이션을 위해 데이터 슬라이스, notices의 (currentPage - 1) * noticesPerPage 부터 currentPage * noticesPerPage 까지 추출 
         페이지1 (currentPage = 1)
@@ -90,7 +93,7 @@ const Notice = () => {
                     ) : (
                         <>
                             <Table className="w-full">
-                                <TableCaption>글쓰기는 관리자의 권한입니다. 권한 없는 사용자가 누를 시 메인페이지로 돌아갑니다</TableCaption>
+                                <TableCaption>공지사항은 사이트의 업데이트를 가장 빠르게 알려줍니다 :)</TableCaption>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="w-[100px]">번호</TableHead>
@@ -141,15 +144,15 @@ const Notice = () => {
                         </>
                     )}
                 </div>
-
+                {userRole === 'admin' &&
                 <div className="flex justify-end w-10/12">
-                    {/* /admin 진입시 계정의 role이 admin이 아니면 홈화면으로 돌아가고, admin일 시 글쓰기 페이지로 진입 */}
                     <Link href="/admin">
                         <Button>
                             글쓰기
                         </Button>
                     </Link>
                 </div>
+                }
             </div>
         </div>
     );

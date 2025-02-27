@@ -5,11 +5,14 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button";
+import { useUser } from "@clerk/clerk-react";
 import Link from "next/link";
 
 
 //자주 묻는 질문 내용
 const FaqContent = () => {
+    const { user } = useUser();
+    const userRole = user?.publicMetadata?.role
     return (
         <div className="w-50 h-80">
             <Accordion type="single" collapsible className="w-full">
@@ -36,7 +39,8 @@ const FaqContent = () => {
             </Accordion>
             <div className="div-faq-cs">
                 <span className="pr-1 font-medium">해결되지 않은 의문이 남아있으신가요?</span>
-               <Link href="/customerService"><Button>1:1 문의</Button></Link>
+               {userRole !=='admin'? <Link href="/customerService"><Button>1:1 문의</Button></Link>:
+               <Link href="/csAdmin"><Button>1:1 문의</Button></Link>}
             </div>
         </div>
     );

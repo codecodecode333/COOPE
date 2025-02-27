@@ -14,6 +14,11 @@ export const get = query({
     }
 });
 
+//관리자에게 출력되는 문의 내역
+export const getInquiries = query(async (ctx) => {
+    return await ctx.db.query("inquiryDetails").collect();
+});
+
 //문의 제출할 때
 export const createInquiry = mutation({
     args: {
@@ -21,6 +26,7 @@ export const createInquiry = mutation({
         content: v.string(),
         userId: v.string(),
         userName: v.string(),
+        userEmail: v.string(),
         category: v.string(),
         environment: v.string(),
         files: v.array(v.object({
@@ -29,8 +35,11 @@ export const createInquiry = mutation({
         })),
       },
     handler: async (ctx, args) => {
-        const { title, content, userId, userName, category, environment } = args;
-        const inquiry = await ctx.db.insert("inquiryDetails", {title, content, userId, userName, category, environment});
+        const { title, content, userId, userName, category, environment, userEmail } = args;
+        const inquiry = await ctx.db.insert("inquiryDetails", {
+            title, content, userId, userName, category, environment,
+            userEmail
+        });
 
         for (const file of args.files) {
             await ctx.db.insert("inquiryFiles", {
@@ -104,13 +113,14 @@ export const deleteInquiry = mutation({
 export const answerInquiry = mutation({
     args: { content: v.string(),
         inquiryId: v.string(),
+        authorId: v.string(),
         files: v.array(v.object({
             storageId: v.id("_storage"),
             fileName: v.string(),
           }))
         },
     handler: async (ctx, args) => {
-        const answer = await ctx.db.insert("inquiryAnswer", { answer: args.content });
+        const answer = await ctx.db.insert("inquiryAnswer", { answer: args.content, postId: args.inquiryId, authorId: args.authorId });
         const id = await ctx.db.normalizeId("inquiryDetails", args.inquiryId);
         if (!id){
             return;
@@ -128,4 +138,17 @@ export const answerInquiry = mutation({
         return answer;
 
     }
-})
+});
+
+//문의 리스트
+export const listAnswer = query({
+    args:{
+      id: v.string()
+    },
+    handler: async (ctx, args) => {
+      const answers = await ctx.db.query("inquiryAnswer").filter((q)=> q.eq(q.field("postId"), args.id)).order("desc").collect();
+
+      
+      return answers;
+    }
+  });

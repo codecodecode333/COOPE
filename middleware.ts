@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from 'next/server'
-const isAdminRoute = createRouteMatcher(['/admin(.*)','/noticeEditPage(.*)','/answerWrite(.*)'])
+const isAdminRoute = createRouteMatcher(['/admin(.*)','/noticeEditPage(.*)','/answerWrite(.*)','/csAdmin(.*)'])
 
 export default clerkMiddleware(async (auth, req) => {
   // Protect all routes starting with `/admin`
