@@ -51,7 +51,8 @@ export default defineSchema({
     authorId: v.string()
   }),
   inquiryAnswerFiles: defineTable({
-    postId: v.id("inquiryAnswer"),
+    postId: v.id("inquiryDetails"),
+    answerId: v.id("inquiryAnswer"),
     file: v.id("_storage"),
     fileName: v.string()
   })

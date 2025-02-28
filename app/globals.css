@@ -114,7 +114,12 @@ html, body {
 .table-row { display:table-row; }
 .table-cell { display:table-cell; }
 
+.hidden-box {
+  opacity: 0; /* 애니메이션 전 기본 상태 */
+  transform: translateY(50px);
+}
 .tracking-in-expand {
+  
 	-webkit-animation: tracking-in-expand 0.7s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
 	        animation: tracking-in-expand 0.7s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
 }

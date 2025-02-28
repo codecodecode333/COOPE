@@ -3,17 +3,31 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import { editComment } from "@/convex/comments";
 import { useUser } from "@clerk/clerk-react";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { comment } from "postcss";
 import { FC } from "react";
-
+import Image from "next/image";
+import { GenericId } from "convex/values";
 interface AnswersProp {
     postId: string
 }
 
-const AnswerList: FC<AnswersProp> = ({postId}) => {
-    const answers = useQuery(api.inquiries.listAnswer, {id: postId});
+const AnswerList: FC<AnswersProp> = ({ postId }) => {
+    const answers = useQuery(api.inquiries.listAnswer, { id: postId });
+    const files = useQuery(api.inquiries.ListAnswerFiles, {inquiryId: postId});
+    const deleteAnswer = useMutation(api.inquiries.deleteAnswer);
     const { user } = useUser();
+
+    const handleDelete = async (id: GenericId<"inquiryAnswer">, e: any) => {
+        e.preventDefault();
+        try {
+            await deleteAnswer({
+                answerId: id
+            });
+        } catch (error) {
+            console.log("에러..임");
+        }
+    }
     return (
         <div>
             {answers === undefined ? (
@@ -26,6 +40,11 @@ const AnswerList: FC<AnswersProp> = ({postId}) => {
                         <div key={answer._id} className="comment-box">
                             <div className="speech-bubble dark:bg-neutral-900">
                                 <div className="font-medium">{answer.answer}</div>
+                                <div className="grid grid-flow-col">
+                                    {files?.map((file) => (
+                                        file.url && answer._id === file.answerId && <Image key={file._id} src={file.url} alt="머임" width={100} height={100} />
+                                    ))}
+                                </div>
                                 <div className="font-medium">{new Intl.DateTimeFormat('ko-KR', {
                                     year: 'numeric',
                                     month: '2-digit',
@@ -34,28 +53,30 @@ const AnswerList: FC<AnswersProp> = ({postId}) => {
                                     minute: '2-digit',
                                     second: '2-digit',
                                     hour12: true
-                                }).format(new Date(answer._creationTime))}</div>
-                                {/*{answer.authorId === user?.id &&
+                                }).format(new Date(answer._creationTime))
+                                }</div>
+
+                                {answer.authorId === user?.id &&
                                     <div className="text-right">
-                                        <Button variant="ghost" className="h-3" onClick={(e) => handleEditButtonClick(comment._id, comment.content, e)}>수정</Button>
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="ghost" className="h-3">삭제</Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
                                                 <AlertDialogHeader>
-                                                    <AlertDialogTitle>댓글을 삭제하시겠습니까?</AlertDialogTitle>
+                                                    <AlertDialogTitle>답변을 삭제하시겠습니까?</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        삭제된 댓글은 복구되지 않습니다. 신중하게 생각하고 삭제해주세요.
+                                                        삭제된 답변은 복구되지 않습니다. 신중하게 생각하고 삭제해주세요.
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>취소</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={(e) => handleDelete(comment._id, e)}>삭제</AlertDialogAction>
+                                                    <AlertDialogAction onClick={(e) => handleDelete(answer._id, e)}>삭제</AlertDialogAction>
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>
                                         </AlertDialog>
-                                    </div>}*/}
+                                    </div>}
+
                             </div>
 
                         </div>
@@ -65,5 +86,5 @@ const AnswerList: FC<AnswersProp> = ({postId}) => {
         </div>
     );
 }
- 
+
 export default AnswerList;

@@ -122,6 +122,8 @@ export const AnswerWrite: FC<AnswerWriteProps> = ({ inquiry, onClose, userEmail,
 
     return (
         <div className="flex flex-col w-full space-y-2">
+            <span>답변 작성시 주의사항</span>
+            <span className="font-medium">- 발생 날짜, 시간에 대한 언급을 해야합니다.</span>
             <form onSubmit={handleAnswer} className="flex flex-col gap-2 w-full">
                 <div className="h-full w-full">
                     <textarea
@@ -132,7 +134,7 @@ export const AnswerWrite: FC<AnswerWriteProps> = ({ inquiry, onClose, userEmail,
                         required
                         className="h-full w-full comment-textarea font-medium"
                         style={{ height: '150px' }} // Adjust the height value here
-                        maxLength={200}
+                        maxLength={500}
                     />
                     <input
                         type="file"
