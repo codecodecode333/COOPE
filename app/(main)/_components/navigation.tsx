@@ -20,6 +20,8 @@ import {
     PopoverContent,
 } from "@/components/ui/popover";
 import { TrashBox } from "./trash-box";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { Navbar } from "./navbar";
 
 
 export const Navigation = () => {
@@ -28,12 +30,15 @@ export const Navigation = () => {
     const sidebarRef = useRef<HTMLElement | null>(null);
     const navbarRef = useRef<HTMLDivElement | null>(null);
     const [isResetting] = useState(false)
-    const [isSidebarVisible, setIsSidebarVisible] = useState(true);
     const originalWidthRef = useRef<number>(240); // 원래 너비를 저장하는 ref
     const isMobile = useMediaQuery("(max-width:768px)");
+    const [isCollapsed,setIsCollapsed] = useState(!isMobile);
     
     const search = useSearch();
     const settings = useSettings();
+    const params = useParams();
+    const router = useRouter();
+    const pathname = usePathname();
 
 
     const MIN_WIDTH = 210; // 최소 너비
@@ -64,7 +69,7 @@ export const Navigation = () => {
     };
 
     const toggleSidebar = () => {
-        setIsSidebarVisible(prev => {
+        setIsCollapsed(prev => {
             if (prev) {
                 // 사이드바를 숨길 때 점진적으로 너비를 줄임
                 let currentWidth = sidebarRef.current!.getBoundingClientRect().width;
@@ -109,7 +114,7 @@ export const Navigation = () => {
                 ref={sidebarRef}
                 className={cn(
                     "group/sidebar h-full bg-black overflow-y-auto relative flex w-60 flex-col z-[99999] rounded-r-xl",
-                    isSidebarVisible ? "w-60" : "w-0",
+                    isCollapsed ? "w-60" : "w-0",
                     isResetting && "transition-all ease-in-out duration-300"
                     //isMobile && "w-0"
                 )}
@@ -167,7 +172,7 @@ export const Navigation = () => {
                 </div>
                 <div
                     onMouseDown={handleMouseDown}
-                    className="cursor-ew-resize absolute h-full w-1 bg-primary/10 right-0 top-0"
+                    className="cursor-ew-resize absolute h-full w-1 hover:bg-primary right-0 top-0"
                 />
             </aside>
             <div
@@ -175,18 +180,22 @@ export const Navigation = () => {
                 className={cn(
                     "absolute top-0 z-[99999] left-60 w-[calc(100%-249px)]",
                     isResetting && "transition-all ease-in-out duration-300",
-                    isSidebarVisible ? "left-60" : "left-0"
+                    isCollapsed ? "left-60" : "left-0"
                 )}
             >
+                {!!params.documentId ? (
+                    <Navbar isCollapsed ={isCollapsed} onResetWidth={toggleSidebar}/>
+                ) : (
                 <nav className="bg-trasparent px-3 py-2 w-full">
-                    {!isSidebarVisible && (
+                    {!isCollapsed && 
                         <MenuIcon 
                             role="button" 
                             className="h-6 w-6 text-muted-foreground" 
                             onClick={toggleSidebar}
                         />
-                    )}
+                    }
                 </nav>
+                )}
             </div>
         </>
     )
