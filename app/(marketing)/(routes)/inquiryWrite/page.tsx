@@ -191,7 +191,7 @@ const InquiryWrite = () => {
             <Label htmlFor="r2">PC</Label>
           </div>
         </RadioGroup>
-        <span className="font-light text-base">- 오류가 발생한 상황이나, 궁금한 사항에 대해 상세하게 작성해주세요</span>
+        <span className="font-light text-base">- 오류가 발생한 상황(발생 시각 등)이나, 궁금한 사항에 대해 상세하게 작성해주세요</span>
         <span className="font-light text-base">- 상황에 대한 스크린샷을 함께 첨부해주시면 답변에 큰 도움이 됩니다</span>
         <span className="font-light text-base">- 답변은 문의내 갱신될 뿐만 아니라, 메일로 함께 전송됩니다</span>
         <textarea
@@ -237,7 +237,7 @@ const InquiryWrite = () => {
         </div>
 
         <div className="buttons flex">
-          <Button variant="secondary" className="btn border border-gray-300 p-1 px-4 font-semibold cursor-pointer ml-auto rounded-md" onClick={redirectCS}>취소</Button>
+          <Button type="button" variant="secondary" className="btn border border-gray-300 p-1 px-4 font-semibold cursor-pointer ml-auto rounded-md" onClick={redirectCS}>취소</Button>
           <Button type="submit" className="btn border p-1 px-4 font-semibold cursor-pointer rounded-md">게시</Button>
         </div>
       </form>

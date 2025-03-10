@@ -152,7 +152,7 @@ const NewPost = () => {
 
         {/* buttons */}
         <div className="buttons flex">
-          <Button variant="secondary" className="btn border border-gray-300 p-1 px-4 font-semibold cursor-pointer ml-auto rounded-md" onClick={redirectNotices}>취소</Button>
+          <Button type="button" variant="secondary" className="btn border border-gray-300 p-1 px-4 font-semibold cursor-pointer ml-auto rounded-md" onClick={redirectNotices}>취소</Button>
           <Button type="submit" className="btn border  p-1 px-4 font-semibold cursor-pointer rounded-md">게시</Button>
         </div>
       </form>

@@ -112,7 +112,7 @@ const noticeEdit = () => {
 
     //취소 클릭시 공지사항 페이지로 돌아갈 수 있도록
     const redirectNotices = () => {
-        router.push('/notice');
+        router.back();
     };
 
     const handleContnetChange = (e: any) => {
@@ -182,7 +182,7 @@ const noticeEdit = () => {
 
                 {/* buttons */}
                 <div className="buttons flex">
-                    <Button variant="secondary" className="btn border border-gray-300 p-1 px-4 font-semibold cursor-pointer ml-auto rounded-md" onClick={redirectNotices}>취소</Button>
+                    <Button type="button" variant="secondary" className="btn border border-gray-300 p-1 px-4 font-semibold cursor-pointer ml-auto rounded-md" onClick={redirectNotices}>취소</Button>
                     <Button type="submit" className="btn border  p-1 px-4 font-semibold cursor-pointer rounded-md">게시</Button>
                 </div>
             </form>

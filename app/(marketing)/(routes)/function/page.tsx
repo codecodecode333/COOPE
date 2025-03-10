@@ -1,14 +1,13 @@
 "use client"
 import React, { useRef } from 'react';
 import Image from "next/image";
-import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/pagination';
-import { Autoplay, EffectCoverflow, Pagination } from 'swiper/modules';
 
 import useMoveScroll from '@/hooks/useMoveScroll';
 import { Button } from '@/components/ui/button';
+import ScrollToTop from '../../_components/ScrollToTop';
 const functionPage = () => {
     const functionTabs = Array.from({ length: 5 }, () => useMoveScroll()); //클릭시 그 기능이 위치한 곳으로 스크롤을 이동시키기 위한 배열
     const functions =
@@ -22,6 +21,7 @@ const functionPage = () => {
         <div className="min-h-full flex flex-col mb-20">
             <div className="flex flex-col items-center justify-center
               md:justify-start text-center gap-y-8 flex-1 px-6 pb-10">
+                <ScrollToTop />
                 <h1 className="text-4xl font-bold">기능</h1>
                 <div className='tracking-in-expand'>
                     <h2 className='font-semibold'>Coope의 다양한 기능들을 소개합니다! 기능을 알아보고 함께 만들러가요!</h2>
