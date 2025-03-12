@@ -91,7 +91,7 @@ const NewPost = () => {
 
   const handleEmojiClick = (emojiObject: { emoji: string; }) => {
     setContent(prevContent => {
-      const maxLength = 10;
+      const maxLength = 500;
       const emojiLength = 2;
       if(prevContent.length <= maxLength || (prevContent.length >= maxLength && prevContent.length + emojiObject.emoji.length <= maxLength + emojiLength)) {
         return prevContent+emojiObject.emoji;

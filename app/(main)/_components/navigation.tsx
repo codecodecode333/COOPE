@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronsLeft, MenuIcon, Plus, PlusCircle, Search, Settings, Trash } from "lucide-react";
+import { ChevronsLeft, MenuIcon, Plus, PlusCircle, Search, Settings, Trash, User } from "lucide-react";
 import { useRef, useState } from "react";
 import UserItem from "./user-item";
 import { useMutation } from "convex/react";
@@ -108,6 +108,10 @@ export const Navigation = () => {
         });
     };
 
+    const onRedirectFriends = () => {
+        router.push("/friends");
+    }
+
     return (
         <>
             <aside 
@@ -158,6 +162,8 @@ export const Navigation = () => {
                         label="Add a page"
                         icon={Plus}
                     />
+
+                    <Item icon={User} label="friends" onClick={onRedirectFriends}/>
                     <Popover>
                         <PopoverTrigger className="w-full mt-4">
                             <Item label="Trash" icon={Trash} />

@@ -55,5 +55,15 @@ export default defineSchema({
     answerId: v.id("inquiryAnswer"),
     file: v.id("_storage"),
     fileName: v.string()
+  }),
+  users: defineTable({
+    name: v.string(),
+    email: v.string(),
+    externalId: v.string(),
+  }).index("byExternalId", ["externalId"]),
+  friends: defineTable({
+    name: v.string(),
+    email: v.string(),
+    userId: v.string()
   })
 });

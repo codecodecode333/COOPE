@@ -15,8 +15,11 @@ import type {
 } from "convex/server";
 import type * as comments from "../comments.js";
 import type * as documents from "../documents.js";
+import type * as friends from "../friends.js";
+import type * as http from "../http.js";
 import type * as inquiries from "../inquiries.js";
 import type * as notices from "../notices.js";
+import type * as users from "../users.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -29,8 +32,11 @@ import type * as notices from "../notices.js";
 declare const fullApi: ApiFromModules<{
   comments: typeof comments;
   documents: typeof documents;
+  friends: typeof friends;
+  http: typeof http;
   inquiries: typeof inquiries;
   notices: typeof notices;
+  users: typeof users;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
