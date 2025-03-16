@@ -60,10 +60,13 @@ export default defineSchema({
     name: v.string(),
     email: v.string(),
     externalId: v.string(),
+    userIcon: v.string()
   }).index("byExternalId", ["externalId"]),
   friends: defineTable({
     name: v.string(),
     email: v.string(),
-    userId: v.string()
+    userId: v.string(),
+    friendId: v.string(),
+    status: v.string()
   })
 });

@@ -199,6 +199,19 @@ html, body {
   margin-top: 5;
   column-gap: 0.688rem;
 }
+.userList-box {
+  display: flex;
+  position: relative;
+  align-items: center;
+  grid-template-columns: auto auto auto auto;
+  margin-top: 5;
+  column-gap: 0.688rem;
+}
+
+.add-button {
+  margin-left: auto; /* 버튼만 오른쪽으로 밀림 */
+}
+
 
 .comment-textarea {
   resize: none;
