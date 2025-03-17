@@ -109,6 +109,7 @@ export const Navigation = () => {
     };
 
     const onRedirectFriends = () => {
+        toggleSidebar();
         router.push("/friends");
     }
 

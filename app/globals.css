@@ -203,11 +203,13 @@ html, body {
   display: flex;
   position: relative;
   align-items: center;
-  grid-template-columns: auto auto auto auto;
   margin-top: 5;
   column-gap: 0.688rem;
 }
 
+.errorMessage {
+  flex-basis: 100%;
+}
 .add-button {
   margin-left: auto; /* 버튼만 오른쪽으로 밀림 */
 }
