@@ -2,11 +2,11 @@ import { AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
 import { Avatar } from "@/components/ui/avatar";
-import { useMutation, useQuery } from "convex/react";
+import { useConvex, useMutation, useQuery } from "convex/react";
 import { Button } from "@/components/ui/button";
 import { UserRoundPlus } from "lucide-react";
 import { useState } from "react";
-
+import { toast } from "sonner";
 
 const UserList = ({ userId }: { userId: string }) => {
   const userList = useQuery(api.users.getUser, { id: userId });
@@ -25,20 +25,14 @@ const UserList = ({ userId }: { userId: string }) => {
 
     return <span>그런 유저는 없어요 :/</span>;
   }
-  const hadleAddFriend = async () => {
-    
+  const handleAddFriend = async () => {
+
     if (!user.username) {
       return null;
     }
     const response = await sendFriendRequest({
       userId: user.id,
       friendId: userList.externalId,
-      name: user.username,
-      friendName: userList.name, // 친구 이름
-      email: user.emailAddresses[0].emailAddress,
-      friendEmail: userList.email, // 친구 이메일
-      friendIcon: userList.userIcon,
-      userIcon: user.imageUrl
     });
 
     if (!response.success && response.message) {
@@ -48,6 +42,14 @@ const UserList = ({ userId }: { userId: string }) => {
     } else {
       // 성공 시 에러를 숨기기
       setShowError(false);
+      //toast를 통해 친구 요청을 보낼 시 이용자가 요청을 보낸 것을 UI적으로 알 수 있도록 하기 위함
+      toast("친구 요청을 보냈습니다.", {
+        description: "친구가 요청을 수락 시 함께 대화를 나눌 수 있습니다 :)",
+        action: {
+          label: "Undo",
+          onClick: () => console.log("Undo"),
+        },
+      });
     }
   };
 
@@ -69,7 +71,7 @@ const UserList = ({ userId }: { userId: string }) => {
               </Avatar>
               <span className="font-medium">{userList.name}</span>
               <span className="font-medium">{userList.email}</span>
-              <Button type="button" onClick={hadleAddFriend} className="add-button px-3"><UserRoundPlus /></Button>
+              <Button type="button" onClick={handleAddFriend} className="add-button px-3"><UserRoundPlus /></Button>
             </div>
             {showError && <div className="font-medium">{errorMessage}</div>}
           </div>

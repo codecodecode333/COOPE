@@ -5,6 +5,8 @@ import { useUser } from "@clerk/clerk-react";
 import { useQuery } from "convex/react";
 import AddFriend from "./addFriend";
 import FriendRequestList from "./friendRequestList";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 const FriendPage = () => {
     const { user } = useUser();
@@ -13,6 +15,7 @@ const FriendPage = () => {
     }
 
     const friendsList = useQuery(api.friends.getFriendsList, { id: user?.id });
+
     return (
         <div className="h-full">
             <ResizablePanelGroup
@@ -20,29 +23,44 @@ const FriendPage = () => {
                 className="min-h-[200px] rounded-lg border md:min-w-[450px]"
             >
                 <ResizablePanel defaultSize={25}>
-                    {/*<Avatar className="ml-auto">
-                        <AvatarImage src={user?.imageUrl} alt="@shadcn" />
-                        <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>*/}
                     <div className="h-full p-5 relative">
                         <div className="flex items-center">
                             <div className="font-semibold">친구 목록</div>
                             <div className="ml-auto">
-                            <FriendRequestList />
+                                <FriendRequestList />
                             </div>
                         </div>
                         <div>
-                            {friendsList?.length === 0 ?
+                            {friendsList?.length === 0 ? (
                                 <div className="justify-center items-center h-full">
                                     <div>아직 허용해준 친구가 없어요</div>
                                 </div>
-                                :
+                            ) : (
                                 <div>
-                                    
-                                </div>}
+                                    <ScrollArea className="h-full w-full rounded-md">
+                                        <div className="p-4">
+                                            {friendsList?.map((friend) => (
+                                                <div key={friend._id}>
+                                                    <div className="font-medium flex items-center">
+                                                        <div>
+                                                            <div>{friend.friendName}</div>
+                                                            <div className="text-sm text-gray-600">{friend.friendEmail}</div>
+                                                        </div>
+                                                        <Avatar className="ml-auto">
+                                                            <AvatarImage src={friend.friendIcon} alt="프로필이미지" />
+                                                            <AvatarFallback>CN</AvatarFallback>
+                                                        </Avatar>
+                                                    </div>
+                                                    <Separator className="my-2" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </ScrollArea>
+                                </div>
+                            )}
                         </div>
                         <div className="absolute bottom-5 right-2">
-                            <div className="flex items-center">
+                            <div className="flex items-end">
                                 <div className="mr-2 font-medium">새로운 친구를 추가하고 싶나요?</div>
                                 <AddFriend />
                             </div>
@@ -58,6 +76,6 @@ const FriendPage = () => {
             </ResizablePanelGroup>
         </div>
     );
-}
+};
 
 export default FriendPage;

@@ -1,41 +1,32 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
 import { useMutation, useQuery } from "convex/react";
 import { GenericId } from "convex/values";
-import { UserRoundPlus } from "lucide-react";
+
 const FriendRequestList = () => {
     const { user } = useUser();
     const acceptFriendRequest = useMutation(api.friends.acceptFriendRequest);
     if (!user) {
         return;
     }
+
+    // 친구 요청 목록 가져오기
     const friendsRequest = useQuery(api.friends.getRequest, { id: user?.id });
 
-    const handleAccept = async (friendRequestList: { _id: GenericId<"friends">; _creationTime: number; userId: string; name: string; email: string; userIcon: string; friendName: string; friendId: string; status: string; friendIcon: string; friendEmail: string; }) => {
+    const handleAccept = async (friendRequestList: { userId: string; friendId: string; }) => {
         try {
             await acceptFriendRequest({
-                name: friendRequestList.name,
-                email: friendRequestList.email,
-                friendEmail: friendRequestList.friendEmail,
                 userId: friendRequestList.userId,
-                userIcon: friendRequestList.userIcon,
-                friendIcon: friendRequestList.friendIcon,
                 friendId: friendRequestList.friendId,
-                friendName: friendRequestList.friendName
-            })
+            });
         } catch (error) {
             console.log('나도 모르겠다:', error);
         }
-    }
+    };
+
     return (
         <div>
             <Popover>
@@ -58,19 +49,29 @@ const FriendRequestList = () => {
                                 :
                                 <div>
                                     {friendsRequest?.map((friendRequest) => (
-                                        <div>
+                                        <div key={friendRequest._id}>
                                             <div className="userList-box">
+                                                {/* 유저 정보 가져오기 */}
                                                 <Avatar>
                                                     <AvatarImage src={friendRequest.userIcon} alt="프로필이미지" />
                                                     <AvatarFallback>CN</AvatarFallback>
                                                 </Avatar>
-                                                <span className="font-medium">{friendRequest.name}</span>
-                                                <span className="font-medium">{friendRequest.email}</span>
-                                                <Button type="button" onClick={() => handleAccept(friendRequest)}className="add-button px-3">수락</Button>
+                                                <span className="font-medium">{friendRequest.userName}</span>
+                                                <span className="font-medium">{friendRequest.userEmail}</span>
+                                                
+                                                {/* 친구 요청 수락 버튼 */}
+                                                <Button 
+                                                    type="button" 
+                                                    onClick={() => handleAccept(friendRequest)} 
+                                                    className="add-button px-3"
+                                                >
+                                                    수락
+                                                </Button>
                                             </div>
                                         </div>
                                     ))}
-                                </div>}
+                                </div>
+                            }
                         </div>
                     </div>
                 </PopoverContent>

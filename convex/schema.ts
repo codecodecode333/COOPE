@@ -63,17 +63,20 @@ export default defineSchema({
     userIcon: v.string()
   }).index("byExternalId", ["externalId"]),
   friends: defineTable({
-    name: v.string(),
-    friendName: v.string(),
-    email: v.string(),
-    friendEmail: v.string(),
     userId: v.string(),
     friendId: v.string(),
-    status: v.string(),
-    friendIcon: v.string(),
-    userIcon: v.string()
-  })
-  .index("by_userId", ["userId"]) // 사용자의 모든 친구 찾기
-  .index("by_friend",["friendId"]) // 사용자를 친구로 추가한 모든 사용자 찾기
-  .index("by_userId_friendId",["userId", "friendId"]) //특정 친구 관계 찾기
+    status: v.string()
+}).index("byUserId", ["userId"])
+  .index("byFriendId", ["friendId"])
+  .index("byUserIdFriendId", ["userId", "friendId"]), // 복합 인덱스 추가
+  rooms: defineTable({
+    roomId: v.string(),
+    user1Id: v.id("users"),
+    user2dId: v.id("users")
+  }),
+  messages: defineTable({
+    roomId: v.string(),
+    senderId: v.id("users"),
+    text: v.string()
+  }).index("byRoomId", ["roomId"]),
 });
