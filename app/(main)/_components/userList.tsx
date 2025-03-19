@@ -5,7 +5,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { useConvex, useMutation, useQuery } from "convex/react";
 import { Button } from "@/components/ui/button";
 import { UserRoundPlus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const UserList = ({ userId }: { userId: string }) => {
@@ -17,6 +17,11 @@ const UserList = ({ userId }: { userId: string }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [showError, setShowError] = useState(false);
 
+  useEffect(() => {
+    // 새로운 유저 검색 시 에러 메시지 초기화
+    setErrorMessage("");
+    setShowError(false);
+  }, [userList]); // userList 변경될 때 실행
   if (!user) {
     return null;
   }

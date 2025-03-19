@@ -71,12 +71,12 @@ export default defineSchema({
   .index("byUserIdFriendId", ["userId", "friendId"]), // 복합 인덱스 추가
   rooms: defineTable({
     roomId: v.string(),
-    user1Id: v.id("users"),
-    user2dId: v.id("users")
+    user1Id: v.string(),
+    user2Id: v.string()
   }),
   messages: defineTable({
     roomId: v.string(),
-    senderId: v.id("users"),
+    senderId: v.string(),
     text: v.string()
   }).index("byRoomId", ["roomId"]),
 });

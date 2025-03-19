@@ -32,7 +32,7 @@ function UserItem() {
               />
             </Avatar>
             <span className="text-start font-medium line-clamp-1 text-white">
-              {user?.fullName}&apos;s Coope
+              {user?.username}&apos;s Coope
             </span>
           </div>
           <ChevronsLeftRight className="rotate-90 ml-2 text-muted-foreground h-4 w-4" />

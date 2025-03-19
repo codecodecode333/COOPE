@@ -297,7 +297,23 @@ html, body {
   position: relative;
 }
 
+.message-mine {
+  padding-right: 16px;
+}
 
+.message-mine div {
+  text-align: right;
+  justify-self: end;
+  grid-column: 1 / 3;
+}
+
+.message-mine p {
+  border-radius: 16px;
+  border-bottom-right-radius: 0;
+  background: var(--bubbles-mine-background);
+  color: white;
+  justify-self: end;
+}
 
 @layer base {
   * {

@@ -70,7 +70,7 @@ const AddFriend = () => {
                             <Button type="button" variant="secondary" onClick={handleState}>
                               닫기
                             </Button>
-                          </DialogClose>
+                          </DialogClose >
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
