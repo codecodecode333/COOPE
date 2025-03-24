@@ -77,6 +77,9 @@ export default defineSchema({
   messages: defineTable({
     roomId: v.string(),
     senderId: v.string(),
-    text: v.string()
+    text: v.string(),
+    file: v.optional(v.id("_storage")),
+    fileName: v.optional(v.string()),
+    format: v.optional(v.string())
   }).index("byRoomId", ["roomId"]),
 });

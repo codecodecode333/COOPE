@@ -21,9 +21,6 @@ const ListOfFriends = () => {
 
 
 
-  console.log(friendList);
-
-
 
 
 

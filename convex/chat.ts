@@ -22,17 +22,54 @@ export const sendMessage = mutation({
     }
 });
 
+//메세지 가져오기
 export const getMessages = query({
     args: {
         roomId: v.string()  // 메시지를 가져올 채팅방 ID
     },
     handler: async (ctx, args) => {
-        // 해당 roomId에 속한 모든 메시지를 가져옴 (senderId 필터 제거)
+        // 해당 roomId에 속한 모든 메시지를 가져옴
         const messages = await ctx.db.query("messages")
-            .filter((q) => q.eq(q.field("roomId"), args.roomId))
+            .withIndex("byRoomId", q => q.eq("roomId", args.roomId))
             .order("desc")
             .take(50);
+            
+        // 파일 URL 추가하기
+        const messagesWithFileUrls = await Promise.all(
+            messages.map(async (message) => {
+                // 파일이 있는 경우에만 URL 생성
+                if (message.file) {
+                    return {
+                        ...message,
+                        fileUrl: await ctx.storage.getUrl(message.file)
+                    };
+                }
+                return message;
+            })
+        );
 
-        return messages.reverse(); // 오래된 메시지가 위로 오도록 정렬
+        return messagesWithFileUrls.reverse(); // 오래된 메시지가 위로 오도록 정렬
     }
 });
+
+//파일이 포함됐을 때의 메세지 저장
+export const sendFile = mutation({
+    args: {
+        storageId: v.id("_storage"),
+        text: v.string(),
+        author: v.string(),
+        format: v.string(),
+        fileName: v.string(),
+        roomId: v.string()
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.insert("messages", {
+            file: args.storageId,
+            text: args.text,
+            senderId: args.author,
+            format: args.format,
+            fileName: args.fileName,
+            roomId: args.roomId
+        })
+    }
+})

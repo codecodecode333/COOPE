@@ -13,6 +13,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ConvexClientProvider } from "@/components/providers/convex-provider";
 import { ModalProvider } from '@/components/providers/modal-provider';
 import localFont from 'next/font/local'
+import { EdgeStoreProvider } from "@/lib/edgestore";
 
 const pretendard = localFont({
   src: "../public/fonts/PretendardVariable.woff2",
@@ -60,6 +61,7 @@ export default function RootLayout({
       <body className={`${pretendard.variable} font-pretendard font-bold`}
       >
         <ConvexClientProvider>
+        <EdgeStoreProvider>
           <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -71,6 +73,7 @@ export default function RootLayout({
             <ModalProvider />
             {children}
           </ThemeProvider>
+          </EdgeStoreProvider>
         </ConvexClientProvider>
       </body>
     </html>
