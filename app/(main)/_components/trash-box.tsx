@@ -42,19 +42,19 @@ export function TrashBox () {
     })
   }
 
-  const onRemove = (documentId:Id<'documents'>) => {
+  const onRemove = (documentId: Id<"documents">) => {
+    const promise = remove({ id: documentId });
 
-    const promise = remove({id:documentId})
+    toast.promise(promise, {
+      loading: "Deleting note..",
+      success: "Note deleted!",
+      error: "Failed to delete note.",
+    });
 
-    toast.promise(promise,{
-      loading:'Deleting note...',
-      success:'Note deleted!',
-      error:'Failed to delete note'
-    })
-    if (params.documentId  === documentId) {
-      router.push('/documents/${documentId}')
+    if (params.documentId === documentId) {
+      router.push("/documents");
     }
-  }
+  };
 
   if (documents === undefined) {
     return (
