@@ -80,6 +80,11 @@ export default defineSchema({
     text: v.string(),
     file: v.optional(v.id("_storage")),
     fileName: v.optional(v.string()),
-    format: v.optional(v.string())
+    format: v.optional(v.string()),
   }).index("byRoomId", ["roomId"]),
+  userReadStatus: defineTable({
+    lastReadmessageId: v.id("messages"),
+    roomId: v.string(),
+    userId: v.string(),
+  })
 });

@@ -4,10 +4,12 @@ import { redirect, usePathname } from "next/navigation";
 import { Children } from "react";
 import { Navigation } from "./_components/navigation"; 
 import { Spinner } from "@/components/spinner";
-import { useConvexAuth } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { SearchCommand } from "@/components/search-command";
 import { Button } from "@/components/ui/button";
 import { Ghost } from "lucide-react";
+import { api } from "@/convex/_generated/api";
+import { Toaster } from "sonner";
 
 const MainLayout = ({
     children
@@ -33,6 +35,7 @@ const MainLayout = ({
             {currentUrl !== "/friends" && 
             <Button type="button" className="fixed bottom-10 z-99 right-10 rounded-full"><Ghost /></Button>}
             <Navigation />
+            <Toaster />
             <main className="flex-1 h-full overflow-y-auto">
              <SearchCommand/>
              {children}

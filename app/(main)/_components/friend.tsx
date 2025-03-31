@@ -13,7 +13,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { GenericId } from "convex/values";
-import { Plus, X } from "lucide-react";
+import { Phone, Plus, X } from "lucide-react";
 
 const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
 
@@ -39,8 +39,9 @@ const FriendPage = () => {
     const chatScrollRef = useRef(null); //채팅을 맨 아래를 항상 비추도록 하기 위한 것
     const bottomRef = useRef<HTMLDivElement | null>(null); //채팅을 맨 아래를 항상 비추도록 하기 위한 것22
 
+
     useEffect(() => {
-        if(bottomRef.current) {
+        if (bottomRef.current) {
             bottomRef.current.scrollIntoView({ behavior: "auto" });
         }
     })
@@ -104,7 +105,9 @@ const FriendPage = () => {
         setSelectedFile(null);
     };
 
-    
+    const redirectToCall = () => {
+
+    };
 
     return (
         <div className="h-full">
@@ -146,7 +149,7 @@ const FriendPage = () => {
                                                     <Separator className="my-2" />
                                                 </div>
                                             ))}
-                                            
+
                                         </div>
                                     </ScrollArea>
                                 </div>
@@ -165,43 +168,55 @@ const FriendPage = () => {
                     <div className="flex h-full p-6">
                         {selectedFriend ?
                             <div className="h-full w-full relative">
-                                <div>
-                                    <h2 className="text-xl font-bold">{selectedFriend.friendName}</h2>
-                                    <p className="text-gray-600">{selectedFriend.friendEmail}</p>
+                                <div className="flex">
+                                    <div className="w-full">
+                                        <h2 className="text-xl font-bold">{selectedFriend.friendName}</h2>
+                                        <p className="text-gray-600">{selectedFriend.friendEmail}</p>
+                                    </div>
+                                    <Button variant="outline" className="right-auto rounded-full" onClick={redirectToCall}>
+                                        <Phone/>
+                                    </Button>
+                                    
                                 </div>
                                 {/* 메시지가 입력창 위까지만 보이도록 `calc`를 사용 */}
                                 <ScrollArea className="h-[calc(100%-8rem)]" ref={chatScrollRef}>
                                     <div>
                                         {messages &&
-                                            messages.map((message) => (
-                                                <article
-                                                    key={message._id}
-                                                    className={
-                                                        message.senderId === user.id
-                                                            ? "message-mine shadow-lg w-fit ml-auto rounded-lg my-2"
-                                                            : "shadow-lg w-fit rounded-lg my-2"
-                                                    }
-                                                >
-                                                    {message.senderId !== user.id ? (
-                                                        <div>
-                                                            <Avatar className="border ml-2">
-                                                                <AvatarImage
-                                                                    src={selectedFriend.friendIcon}
-                                                                    alt="프로필이미지"
-                                                                />
-                                                                <AvatarFallback>CN</AvatarFallback>
-                                                            </Avatar>
-                                                            <div className="mx-3">{selectedFriend.friendName}</div>
-                                                        </div>
-                                                    ) : (
-                                                        <div>나</div>
-                                                    )}
-                                                    {/* 파일이 있는 경우 표시 */}
-                                                    {message.file && (
-                                                        <div className="mx-3 mt-2">
-                                                            {message.format && message.format.startsWith('image/') ? (
-                                                                // 이미지인 경우
-                                                                <div>
+                                            messages.map((message, index) => {
+                                                const isSameSenderAsPrevious =
+                                                    index > 0 && messages[index - 1].senderId === message.senderId;
+                                                return (
+                                                    <article
+                                                        key={message._id}
+                                                        className={
+                                                            message.senderId === user.id
+                                                                ? "message-mine shadow-lg w-fit ml-auto rounded-lg my-3"
+                                                                : "shadow-lg w-fit rounded-lg my-3"
+                                                        }
+                                                    >
+                                                        {/* 같은 sender가 연속될 경우, 프로필 및 닉네임 생략 */}
+                                                        {!isSameSenderAsPrevious && message.senderId !== user.id && (
+                                                            <div>
+                                                                <Avatar className="border ml-2">
+                                                                    <AvatarImage
+                                                                        src={selectedFriend.friendIcon}
+                                                                        alt="프로필이미지"
+                                                                    />
+                                                                    <AvatarFallback>CN</AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="mx-3">{selectedFriend.friendName}</div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* '나'의 메시지일 경우, 첫 메시지에만 표시 */}
+                                                        {!isSameSenderAsPrevious && message.senderId === user.id && (
+                                                            <div>나</div>
+                                                        )}
+
+                                                        {/* 메시지 내용 */}
+                                                        {message.file && (
+                                                            <div className="mx-3 mt-2">
+                                                                {message.format && message.format.startsWith("image/") ? (
                                                                     <Image
                                                                         src={`${convexSiteUrl}/getFile?storageId=${message.file}`}
                                                                         width={200}
@@ -209,42 +224,55 @@ const FriendPage = () => {
                                                                         alt={message.fileName || "이미지"}
                                                                         className="rounded-md"
                                                                     />
-                                                                </div>
-                                                            ) : (
-                                                                // 다른 파일 형식인 경우 다운로드 링크 제공
-                                                                <a
-                                                                    href={`${convexSiteUrl}/getFile?storageId=${message.file}&fileName=${encodeURIComponent(message.fileName || "file")}`}
-                                                                    download={message.fileName}
-                                                                    className="flex items-center p-2 bg-gray-100 rounded-md hover:bg-gray-200"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                                                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                                                    </svg>
-                                                                    {message.fileName || "파일 다운로드"}
-                                                                </a>
-                                                            )}
+                                                                ) : (
+                                                                    <a
+                                                                        href={`${convexSiteUrl}/getFile?storageId=${message.file}&fileName=${encodeURIComponent(
+                                                                            message.fileName || "file"
+                                                                        )}`}
+                                                                        download={message.fileName}
+                                                                        className="flex items-center p-2 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-700"
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                    >
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="16"
+                                                                            height="16"
+                                                                            viewBox="0 0 24 24"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth="2"
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            className="mr-2"
+                                                                        >
+                                                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                                            <polyline points="7 10 12 15 17 10"></polyline>
+                                                                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                                                                        </svg>
+                                                                        {message.fileName || "파일 다운로드"}
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        <div className="font-normal mx-3">{message.text}</div>
+                                                        <div className="font-extralight mx-3 pb-3">
+                                                            {new Intl.DateTimeFormat("ko-KR", {
+                                                                year: "numeric",
+                                                                month: "2-digit",
+                                                                day: "2-digit",
+                                                                hour: "2-digit",
+                                                                minute: "2-digit",
+                                                                second: "2-digit",
+                                                                hour12: true,
+                                                            }).format(new Date(message._creationTime))}
                                                         </div>
-                                                    )}
-                                                    <div className="font-extralight mx-3 pb-3"></div>
-                                                    <div className="font-normal mx-3">{message.text}</div>
-                                                    <div className="font-extralight mx-3 pb-3">
-                                                        {new Intl.DateTimeFormat("ko-KR", {
-                                                            year: "numeric",
-                                                            month: "2-digit",
-                                                            day: "2-digit",
-                                                            hour: "2-digit",
-                                                            minute: "2-digit",
-                                                            second: "2-digit",
-                                                            hour12: true,
-                                                        }).format(new Date(message._creationTime))}
-                                                    </div>
-                                                </article>
-                                            ))}
-                                        <div ref={bottomRef}/>
+                                                    </article>
+                                                );
+                                            })}
+
+                                        <div ref={bottomRef} />
                                     </div>
                                 </ScrollArea>
                                 {/* 고정된 입력창 */}

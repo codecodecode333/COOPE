@@ -164,7 +164,7 @@ export const Navigation = () => {
                         icon={Plus}
                     />
 
-                    <Item icon={User} label="friends" onClick={onRedirectFriends}/>
+                    <Item icon={User} label="친구" onClick={onRedirectFriends}/>
                     <Popover>
                         <PopoverTrigger className="w-full mt-4">
                             <Item label="Trash" icon={Trash} />

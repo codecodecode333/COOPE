@@ -6,19 +6,27 @@ export const sendMessage = mutation({
     args: {
         roomId: v.string(),
         senderId: v.string(),
-        text: v.string()
+        text: v.string(),
     },
     handler: async (ctx, args) => {
         if (!args.roomId || !args.senderId || !args.text.trim()) {
             throw new Error("유효하지않은 메세지입니다.")
         }
 
-        await ctx.db.insert("messages", {
+        const message = await ctx.db.insert("messages", {
             roomId: args.roomId,
             senderId: args.senderId,
             text: args.text
         }
         )
+        const existingStatus = ctx.db.query("userReadStatus").filter((q) => q.eq(q.field("roomId"), args.roomId)).first();
+        if (!existingStatus) {
+            await ctx.db.insert("userReadStatus", {
+                lastReadmessageId: message,
+                roomId: args.roomId,
+                userId: args.senderId
+            })
+        }
     }
 });
 
@@ -32,8 +40,8 @@ export const getMessages = query({
         const messages = await ctx.db.query("messages")
             .withIndex("byRoomId", q => q.eq("roomId", args.roomId))
             .order("desc")
-            .take(50);
-            
+            .collect();
+
         // 파일 URL 추가하기
         const messagesWithFileUrls = await Promise.all(
             messages.map(async (message) => {
@@ -63,7 +71,7 @@ export const sendFile = mutation({
         roomId: v.string()
     },
     handler: async (ctx, args) => {
-        await ctx.db.insert("messages", {
+        const message = await ctx.db.insert("messages", {
             file: args.storageId,
             text: args.text,
             senderId: args.author,
@@ -71,5 +79,23 @@ export const sendFile = mutation({
             fileName: args.fileName,
             roomId: args.roomId
         })
+        const existingStatus = ctx.db.query("userReadStatus").filter((q) => q.eq(q.field("roomId"), args.roomId)).first();
+        if (!existingStatus) {
+            await ctx.db.insert("userReadStatus", {
+                lastReadmessageId: message,
+                roomId: args.roomId,
+                userId: args.author
+            })
+        }
     }
 })
+
+//새 메세지(보류)
+export const getNewMessages = query({
+    args: {
+        lastReadMessage: v.id("messages")
+    },
+    handler: async (ctx, args) => {
+
+    }
+});
