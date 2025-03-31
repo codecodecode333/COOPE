@@ -50,8 +50,7 @@ export function Item ({
   const onArchive = (event:React.MouseEvent<HTMLDivElement,MouseEvent>) => {
     event.stopPropagation()
     if (!id) return
-    const promise = archive({id})
-    .then(() => router.push('/documents'))
+    const promise = archive({ id }).then(() => router.push("/documents"));
 
     toast.promise(promise,{
       loading:"Moving to trash...",
@@ -106,7 +105,7 @@ return (
           {documentIcon}
         </div>
       ) :
-        <Icon className="shrink-0 w-[18px] h-[18px] mr-2 text-muted-foreground"/>
+      <Icon className="mr-2 h-[1.125rem] w-[1.125rem] shrink-0 text-muted-foreground" />
       }
       <span className="truncate">
         {label}
