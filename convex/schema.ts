@@ -63,10 +63,28 @@ export default defineSchema({
     userIcon: v.string()
   }).index("byExternalId", ["externalId"]),
   friends: defineTable({
-    name: v.string(),
-    email: v.string(),
     userId: v.string(),
     friendId: v.string(),
     status: v.string()
+}).index("byUserId", ["userId"])
+  .index("byFriendId", ["friendId"])
+  .index("byUserIdFriendId", ["userId", "friendId"]), // 복합 인덱스 추가
+  rooms: defineTable({
+    roomId: v.string(),
+    user1Id: v.string(),
+    user2Id: v.string()
+  }),
+  messages: defineTable({
+    roomId: v.string(),
+    senderId: v.string(),
+    text: v.string(),
+    file: v.optional(v.id("_storage")),
+    fileName: v.optional(v.string()),
+    format: v.optional(v.string()),
+  }).index("byRoomId", ["roomId"]),
+  userReadStatus: defineTable({
+    lastReadmessageId: v.id("messages"),
+    roomId: v.string(),
+    userId: v.string(),
   })
 });

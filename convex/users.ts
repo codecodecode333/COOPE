@@ -2,7 +2,7 @@ import { internalMutation, query, QueryCtx } from "./_generated/server";
 import { UserJSON } from "@clerk/backend";
 import { v, Validator } from "convex/values";
 
-
+// 유저 가져오기
 export const getUser = query({
   args: {id: v.string()},
   handler: async (ctx, args) => {
@@ -11,6 +11,7 @@ export const getUser = query({
   }
 })
 
+// getCurrentUserOrThrow까지 endpoint 설정해서 user가 생성, 수정, 삭제될 때 db에 반영되도록 한 부분임 
 export const current = query({
   args: {},
   handler: async (ctx) => {

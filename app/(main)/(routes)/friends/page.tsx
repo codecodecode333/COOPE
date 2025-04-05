@@ -1,54 +1,28 @@
 "use client"
-import { Button } from "@/components/ui/button";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/clerk-react";
 import { useQuery } from "convex/react";
-import { PlusCircle, UserSearch } from "lucide-react";
 import Image from "next/image";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useState } from "react";
-import UserList from "../../_components/userList";
+import AddFriend from "../../_components/addFriend"; // 친구 추가 버튼과 기능
+import FriendPage from "../../_components/friend"; // 친구(요청중, 수락됨)이 있을 경우의 페이지
+import FriendRequestList from "../../_components/friendRequestList";
 
 const ListOfFriends = () => {
   const [searchUser, setSearchUser] = useState("");
-  const [clickSearchUser, setClickSearchUser] = useState(false);
   const { user } = useUser();
-  const searchedUser = useQuery(api.users.getUser, { id: searchUser });
   if (!user) {
     return;
   }
   const friendList = useQuery(api.friends.get, { id: user?.id });
 
 
-  console.log(friendList);
 
-  const handleSearchFriend = () => {
-    if (!searchUser) {
-      return;
-    }
-    setClickSearchUser(true);
-  }
 
-  const searchUserChange = (e: any) => {
-    setSearchUser(e.target.value);
-  }
 
-  const handleState = () => {
-    setClickSearchUser(false);
-    setSearchUser("");
-  }
+
 
   if (friendList === undefined) {
     return (
@@ -65,6 +39,7 @@ const ListOfFriends = () => {
     )
   }
 
+  // 요청한 친구도 없고, 수락된 친구도 없을 경우
   if (friendList?.length === 0) {
     return (
       <div className="h-full flex flex-col items-center justify-center space-y-4">
@@ -87,52 +62,20 @@ const ListOfFriends = () => {
         <h2 className="text-lg font-medium">
           메세지를 나눌 친구가 없어요. 새로운 친구를 추가해볼까요?
         </h2>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="w-4 h-4 mr-2" />
-              친구 추가
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>친구 찾기</DialogTitle>
-              <DialogDescription>
-                검색을 통해 친구를 찾아볼까요?
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex items-center space-x-2">
-              <div className="grid flex-1 gap-2">
-                <Label htmlFor="link" className="sr-only">
-                  Link
-                </Label>
-                <Input
-                  id="link"
-                  placeholder="친구의 닉네임을 입력하세요"
-                  value={searchUser}
-                  onChange={searchUserChange}
-                />
-              </div>
-              <Button type="button" size="sm" className="px-3" onClick={handleSearchFriend} >
-                <UserSearch/>
-              </Button>
-            </div>
-            {
-              clickSearchUser?
-              <UserList userId={searchUser} />: <span className="font-medium">입력된 값이 없습니다.</span>
-            }
-            <DialogFooter className="sm:justify-start">
-              <DialogClose asChild>
-                <Button type="button" variant="secondary" onClick={handleState}>
-                  닫기
-                </Button>
-              </DialogClose>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <div className="flex">
+          <AddFriend />
+          <div className="ml-2"><FriendRequestList /></div>
+        </div>
       </div>
     );
   }
+
+  return (
+    <div className="h-full">
+      <FriendPage />
+    </div>
+  )
+
 }
 
 export default ListOfFriends;
