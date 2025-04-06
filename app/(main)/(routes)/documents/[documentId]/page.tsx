@@ -22,6 +22,10 @@ import Editor from "@/components/editor"
 export default function DocumentIdPage () { 
   const params = useParams<{documentId: Id<'documents'>}>()
 
+  const Editor = useMemo(
+    () => dynamic(() => import("@/components/editor"), { ssr: false }),
+    [],
+  );
 
 
   const document = useQuery(api.documents.getById,{
