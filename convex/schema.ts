@@ -28,8 +28,8 @@ export default defineSchema({
     icon: v.optional(v.string()),
     isPublished: v.boolean(),
   })
-  .index("by_user", ["userId"])
-  .index("by_user_parent", ["userId","parentDocument"]),
+    .index("by_user", ["userId"])
+    .index("by_user_parent", ["userId", "parentDocument"]),
   inquiryDetails: defineTable({
     userId: v.string(),
     userName: v.string(), 
@@ -45,7 +45,7 @@ export default defineSchema({
     file: v.id("_storage"),
     fileName: v.string()
   }),
-  inquiryAnswer: defineTable ({
+  inquiryAnswer: defineTable({
     answer: v.string(),
     postId: v.string(),
     authorId: v.string()
@@ -68,5 +68,19 @@ export default defineSchema({
     userId: v.string(),
     friendId: v.string(),
     status: v.string()
+  }),
+  messages: defineTable({
+    userId: v.string(),
+    role: v.union(v.literal("user"), v.literal("ai")),
+    text: v.string(),
+    createdAt: v.number(),
+  }).index("by_user", ["userId"]),
+  chatMessages: defineTable({
+    userId: v.string(),
+    role: v.string(),
+    content: v.string(),
+    timestamp: v.number(),
   })
+    .index("by_user", ["userId"])
+    .index("by_user_timestamp", ["userId", "timestamp"]),
 });

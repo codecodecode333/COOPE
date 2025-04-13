@@ -1,13 +1,15 @@
 "use client";
 
 import { redirect } from "next/navigation";
-import { Children } from "react";
+import { Children, useState } from "react";
 import { Navigation } from "./_components/navigation"; 
 import { Spinner } from "@/components/spinner";
 import { useConvexAuth } from "convex/react";
 import { SearchCommand } from "@/components/search-command";
 import { Button } from "@/components/ui/button";
 import { Ghost } from "lucide-react";
+import { AIChatModal } from "@/components/ai-chat-modal";
+import { ChatProvider } from "@/components/chat-context";
 
 const MainLayout = ({
     children
@@ -15,6 +17,7 @@ const MainLayout = ({
     children: React.ReactNode;
 }) => {
     const { isAuthenticated, isLoading } = useConvexAuth();
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     if (isLoading) {
         return (
@@ -29,14 +32,23 @@ const MainLayout = ({
     }
 
     return (
-        <div className="h-full flex dark:bg-[#1F1F1F]">
-            <Button type="button" className="fixed bottom-10 z-99 right-10 rounded-full"><Ghost /></Button>
-            <Navigation />
-            <main className="flex-1 h-full overflow-y-auto">
-             <SearchCommand/>
-             {children}
-            </main>
-        </div>
+        <ChatProvider>
+            <div className="h-full flex dark:bg-[#1F1F1F]">
+                <Button 
+                    type="button" 
+                    className="fixed bottom-10 z-99 right-10 rounded-full"
+                    onClick={() => setIsChatOpen(true)}
+                >
+                    <Ghost />
+                </Button>
+                <AIChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+                <Navigation />
+                <main className="flex-1 h-full overflow-y-auto">
+                 <SearchCommand/>
+                 {children}
+                </main>
+            </div>
+        </ChatProvider>
     );
 }
 
