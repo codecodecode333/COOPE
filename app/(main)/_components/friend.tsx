@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { GenericId } from "convex/values";
 import { Phone, Plus, X } from "lucide-react";
+import CallModal from "./callModal";
 
 const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
 
@@ -38,7 +39,7 @@ const FriendPage = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const chatScrollRef = useRef(null); //채팅을 맨 아래를 항상 비추도록 하기 위한 것
     const bottomRef = useRef<HTMLDivElement | null>(null); //채팅을 맨 아래를 항상 비추도록 하기 위한 것22
-
+    const [isModalOpen, setIsModalOpen] = useState(false);//전화 모달
 
     useEffect(() => {
         if (bottomRef.current) {
@@ -106,8 +107,13 @@ const FriendPage = () => {
     };
 
     const redirectToCall = () => {
-
+        setIsModalOpen(true); // 모달 열림
     };
+    
+      const closeModal = () => {
+        setIsModalOpen(false); // 모달 닫힘
+    };
+    
 
     return (
         <div className="h-full">
@@ -176,7 +182,7 @@ const FriendPage = () => {
                                     <Button variant="outline" className="right-auto rounded-full" onClick={redirectToCall}>
                                         <Phone/>
                                     </Button>
-                                    
+                                    <CallModal isOpen={isModalOpen} onClose={closeModal} roomId={selectedFriend.roomId} />
                                 </div>
                                 {/* 메시지가 입력창 위까지만 보이도록 `calc`를 사용 */}
                                 <ScrollArea className="h-[calc(100%-8rem)]" ref={chatScrollRef}>

@@ -2,11 +2,13 @@
   "name": "coope1",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "server": "node --loader ts-node/esm server/server.ts"
   },
   "dependencies": {
     "@blocknote/core": "^0.26.0",
@@ -42,9 +44,11 @@
     "cmdk": "^1.0.4",
     "convex": "^1.18.2",
     "emoji-picker-react": "^4.12.2",
+    "express": "^5.1.0",
     "jose": "^6.0.10",
     "lucide-react": "^0.473.0",
     "mediasoup": "^3.15.7",
+    "mediasoup-client": "^3.9.5",
     "nanoid": "^5.1.5",
     "next": "^15.2.4",
     "next-themes": "^0.4.4",
@@ -73,20 +77,24 @@
     "usehooks-ts": "^3.1.1",
     "uuid": "^11.1.0",
     "webpack": "^5.98.0",
+    "webrtc-adapter": "^9.0.1",
     "zod": "^3.24.2",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/express": "^5.0.1",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.17",
     "@types/react": "19.0.12",
     "@types/react-dom": "19.0.4",
+    "@types/socket.io": "^3.0.1",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
     "postcss": "^8.5.1",
     "tailwindcss": "^3.4.17",
+    "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
   },
   "overrides": {
