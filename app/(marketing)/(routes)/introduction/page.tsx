@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -16,6 +17,7 @@ import { SignInButton } from "@clerk/clerk-react";
 const Introduction = () => {
     const { isAuthenticated, isLoading } = useConvexAuth();
     const target = useRef<HTMLDivElement>(null);
+    const { workspaceId } = useParams() as { workspaceId: string };
     const pagination = {
         clickable: true,
         renderBullet: function (index: number, className: string) {
@@ -82,7 +84,7 @@ const Introduction = () => {
                         {isAuthenticated && !isLoading && (
                             <div className="text-start my-2">
                                 <Button asChild className="shadow-lg mr-2">
-                                    <Link href="/documents">
+                                <Link href={`/workspace/${workspaceId}/documents`}>
                                         Coope 시작하기
                                     </Link>
                                 </Button>

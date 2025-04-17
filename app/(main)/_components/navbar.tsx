@@ -16,10 +16,14 @@ import { Menu } from "./menu"
 
 export function Navbar ({isCollapsed,onResetWidth}:NavbarProps) {
 
-  const params = useParams()
+  const params = useParams() as {
+    workspaceId: string;
+    documentId: Id<"documents">;
+  };
 
   const document = useQuery(api.documents.getById,{
-    documentId:params.documentId as Id<'documents'>
+    documentId:params.documentId as Id<'documents'>,
+    workspaceId:params.workspaceId,
   })
 
   if (document === undefined) {

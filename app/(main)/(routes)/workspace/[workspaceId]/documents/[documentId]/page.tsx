@@ -17,10 +17,12 @@ import Editor from "@/components/editor"
     documentId:Id<'documents'>
   }
 }*/ 
-//{params}:DocumentIdPageProps <- next js 14v 까지는 params을 동기식으로 접근했지만 15v부터 비동기식으로 접근하도록 변경되어서 이방식을 쓰면 에러 메세지가 뜸
-// const params = useParams.. 처럼 useParams 사용하거나 async/await를 사용해야함
+
 export default function DocumentIdPage () { 
-  const params = useParams<{documentId: Id<'documents'>}>()
+  const params = useParams() as {
+    workspaceId: string;
+    documentId: Id<"documents">;
+  };
 
   const Editor = useMemo(
     () => dynamic(() => import("@/components/editor"), { ssr: false }),
@@ -29,7 +31,8 @@ export default function DocumentIdPage () {
 
 
   const document = useQuery(api.documents.getById,{
-    documentId:params.documentId
+    documentId:params.documentId,
+    workspaceId
   })
 
   const update = useMutation(api.documents.update)

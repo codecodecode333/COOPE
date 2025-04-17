@@ -19,11 +19,6 @@ const ListOfFriends = () => {
   const friendList = useQuery(api.friends.get, { id: user?.id });
 
 
-
-
-
-
-
   if (friendList === undefined) {
     return (
       <div>

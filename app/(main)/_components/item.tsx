@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 
 import { Skeleton } from "@/components/ui/skeleton"
 import { api } from "@/convex/_generated/api"
@@ -13,6 +13,7 @@ import { useMutation } from "convex/react"
 import { ChevronDown, ChevronRight, LucideIcon, MoreHorizontal, Plus, Trash } from "lucide-react"
 import { toast } from "sonner"
 import { useUser } from "@clerk/clerk-react"
+
 
 	
 
@@ -46,11 +47,17 @@ export function Item ({
   const router = useRouter()
   const create = useMutation(api.documents.create)
   const archive = useMutation(api.documents.archive)
+  const { workspaceId } = useParams() as { workspaceId?: string };
+
+    if (!workspaceId) {
+    console.log("waiting for hydration...");
+    return null;
+    }
 
   const onArchive = (event:React.MouseEvent<HTMLDivElement,MouseEvent>) => {
     event.stopPropagation()
     if (!id) return
-    const promise = archive({ id }).then(() => router.push("/documents"));
+    const promise = archive({ id }).then(() => router.push(`/workspace/${workspaceId}/documents/${id}`));
 
     toast.promise(promise,{
       loading:"Moving to trash...",
@@ -67,12 +74,12 @@ export function Item ({
   const onCreate = (event:React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.stopPropagation()
     if (!id) return
-    const promise = create({title:"Untitled",parentDocument:id})
+    const promise = create({title:"Untitled",parentDocument:id,workspaceId: workspaceId,})
     .then((documentId) => {
       if (!expanded) {
         onExpand?.()
       }
-      router.push(`/documents/${documentId}`)
+      router.push(`/workspace/${workspaceId}/documents/${documentId}`);
     })
 
     toast.promise(promise,{

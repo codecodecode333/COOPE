@@ -1,13 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronsLeft, MenuIcon, Plus, PlusCircle, Search, Settings, Trash, User } from "lucide-react";
+import { ChevronsLeft, MenuIcon, Plus, PlusCircle, Search, Settings, Trash, User, UserPlus  } from "lucide-react";
 import { useRef, useState } from "react";
 import UserItem from "./user-item";
 import { useMutation } from "convex/react";
 
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
+import { useInvite } from "@/hooks/use-invite";
 
 import { api } from "@/convex/_generated/api";
 import { Item } from "./item";
@@ -22,6 +23,7 @@ import {
 import { TrashBox } from "./trash-box";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { Navbar } from "./navbar";
+import  InviteModal  from "@/components/modals/invite-modal";
 
 
 export const Navigation = () => {
@@ -33,8 +35,15 @@ export const Navigation = () => {
     const originalWidthRef = useRef<number>(240); // 원래 너비를 저장하는 ref
     const isMobile = useMediaQuery("(max-width:768px)");
     const [isCollapsed,setIsCollapsed] = useState(!isMobile);
+    const { workspaceId } = useParams() as { workspaceId?: string };
+
+    if (!workspaceId) {
+    console.log("waiting for hydration...");
+    return null;
+    }
     
     const search = useSearch();
+    const invite = useInvite();
     const settings = useSettings();
     const params = useParams();
     const router = useRouter();
@@ -78,51 +87,33 @@ export const Navigation = () => {
                 let currentWidth = sidebarRef.current!.getBoundingClientRect().width;
                 const interval = setInterval(() => {
                     if (currentWidth > 0) {
-                        currentWidth -= 10;
+                        currentWidth -= 10; // 5px씩 줄임
                         sidebarRef.current!.style.width = `${currentWidth}px`;
-                        // 네비게이션 바 크기 조절
-                        if (navbarRef.current) {
-                            navbarRef.current.style.left = `${currentWidth}px`;
-                            navbarRef.current.style.width = `calc(100% - ${currentWidth + 17}px)`;
-                        }
                     } else {
-                        sidebarRef.current!.style.width = `0px`;
-                        if (navbarRef.current) {
-                            navbarRef.current.style.left = '0px';
-                            navbarRef.current.style.width = 'calc(100% - 17px)';
-                        }
+                        sidebarRef.current!.style.width = `0px`
                         clearInterval(interval);
                     }
-                }, 1);
+                }, 1); // 10ms마다 실행
             } else {
                 // 사이드바를 다시 보일 때 점진적으로 너비를 늘림
-                let currentWidth = 0;
-                sidebarRef.current!.style.width = '0';
-                if (navbarRef.current) {
-                    navbarRef.current.style.left = '0px';
-                    navbarRef.current.style.width = 'calc(100% - 17px)';
-                }
+                let currentWidth = 0; // 시작 너비
+                sidebarRef.current!.style.width = '0'; // 초기 너비를 0으로 설정
                 const interval = setInterval(() => {
                     if (currentWidth < originalWidthRef.current) {
-                        currentWidth += 10;
+                        currentWidth += 10; // 5px씩 늘림
                         sidebarRef.current!.style.width = `${currentWidth}px`;
-                        // 네비게이션 바 크기 조절
-                        if (navbarRef.current) {
-                            navbarRef.current.style.left = `${currentWidth}px`;
-                            navbarRef.current.style.width = `calc(100% - ${currentWidth + 17}px)`;
-                        }
                     } else {
                         clearInterval(interval);
                     }
-                }, 1);
+                }, 1); // 10ms마다 실행
             }
             return !prev;
         });
     };
 
     const handleCreate = () => {
-        const promise = create({ title: "Untitled" }).then((documentId) =>
-            router.push(`/documents/${documentId}`),
+        const promise = create({ title: "Untitled", workspaceId: workspaceId, }).then((documentId) =>
+            router.push(`/workspace/${workspaceId}/documents/${documentId}`),
         );
 
         toast.promise(promise, {
@@ -149,7 +140,12 @@ export const Navigation = () => {
                 )}
             >   
                 <div className="p-4">
-                    <img src="/logo-dark.png" alt="Logo" className="w-44 h-auto ml-2" />
+                    <img 
+                        src="/logo-dark.png" 
+                        alt="Logo" 
+                        className="w-44 h-auto ml-2 cursor-pointer hover:opacity-80 transition" 
+                        onClick={() => router.push('/')}
+                    />
                 </div>
                 <div 
                     role="button"
@@ -163,6 +159,16 @@ export const Navigation = () => {
                 </div>
                 <div>
                     <UserItem/>
+                    <Item
+                        label="Invite"
+                        icon={UserPlus}
+                        onClick={invite.onOpen}
+                    />
+                    {invite.isOpen && (
+                    <InviteModal
+                    workspaceId={workspaceId}
+                    />
+                    )}
                     <Item
                         label="Search"
                         icon={Search}
@@ -211,7 +217,7 @@ export const Navigation = () => {
                 className={cn(
                     "absolute top-0 z-[9999]",
                     isResetting && "transition-all ease-in-out duration-300",
-                    isCollapsed ? "left-60" : "left-0 "
+                    isCollapsed ? "left-60 w-[calc(100%-257px)]" : "left-0 w-[calc(100%-17px)]"
                 )}
             >
                 {!!params.documentId ? (

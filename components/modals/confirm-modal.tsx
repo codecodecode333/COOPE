@@ -5,15 +5,23 @@ import {AlertDialog,AlertDialogAction,AlertDialogCancel
   ,AlertDialogFooter,AlertDialogHeader,
 AlertDialogTitle,AlertDialogTrigger} from '@/components/ui/alert-dialog'
 import React from "react"
+import { usePathname, useParams, useRouter } from "next/navigation"
 
 interface ConfirmModalProps {
   children:React.ReactNode
   onConfirm:() => void
+  documentId: string
+  workspaceId: string;
 }
 
-export function ConfirmModal ({children,onConfirm}:ConfirmModalProps) {
+export function ConfirmModal ({children,onConfirm,documentId, workspaceId }:ConfirmModalProps) {
+  const router = useRouter()
+  const pathname = usePathname();
 
   const handleConfirm = (e:React.MouseEvent<HTMLButtonElement,MouseEvent>) => {
+    if (pathname.includes(documentId)) {
+      router.push(`/workspace/${workspaceId}/documents`);
+    }
     e.stopPropagation()
     onConfirm()
   }

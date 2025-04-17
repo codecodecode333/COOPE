@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useUser } from "@clerk/clerk-react"
 import { useMutation } from "convex/react"
 import { toast } from "sonner"
@@ -20,7 +20,12 @@ interface MenuProps {
 }
 
 export function Menu ({documentId}:MenuProps) {
+  const { workspaceId } = useParams() as { workspaceId?: string };
 
+    if (!workspaceId) {
+    console.log("waiting for hydration...");
+    return null;
+    }
   const router = useRouter()
   const {user} = useUser()
 
@@ -34,7 +39,7 @@ export function Menu ({documentId}:MenuProps) {
       success:"Note Moved to trash!",
       error:"Failed to archive note."
     })
-    router.push('/documents')
+    router.push(`/workspace/${workspaceId}/documents`);
   }
 
 

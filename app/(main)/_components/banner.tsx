@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useMutation } from "convex/react"
 import { toast } from 'sonner'
 
@@ -14,7 +14,12 @@ interface BannerProps {
 }
 
 export function Banner ({documentId}:BannerProps) {
+  const { workspaceId } = useParams() as { workspaceId?: string };
 
+    if (!workspaceId) {
+    console.log("waiting for hydration...");
+    return null;
+    }
   const router = useRouter()
 
   const remove = useMutation(api.documents.remove)
@@ -29,7 +34,9 @@ export function Banner ({documentId}:BannerProps) {
       error:'Failed to delete note.'
     })
 
-    router.push(`/documents`);
+    promise.then(() => {
+      router.push(`/workspace/${workspaceId}/documents`);
+    });
   }
 
   const onRestore = () => {
@@ -49,7 +56,7 @@ return (
       h-auto font-normal" variant='outline' size='sm' onClick={onRestore}>
          Restore page
       </Button>
-       <ConfirmModal onConfirm={onRemove}>
+       <ConfirmModal onConfirm={onRemove} documentId={documentId} workspaceId={workspaceId}>
         <Button className="border-white bg-transparent hover:bg-primary/5 text-white hover:text-white p-1 px-2
       h-auto font-normal" variant='outline' size='sm'>
         Delete forever
