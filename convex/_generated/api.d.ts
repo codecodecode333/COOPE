@@ -13,7 +13,9 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as aiChat from "../aiChat.js";
 import type * as chat from "../chat.js";
+import type * as client from "../client.js";
 import type * as comments from "../comments.js";
 import type * as documents from "../documents.js";
 import type * as friends from "../friends.js";
@@ -32,7 +34,9 @@ import type * as users from "../users.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  aiChat: typeof aiChat;
   chat: typeof chat;
+  client: typeof client;
   comments: typeof comments;
   documents: typeof documents;
   friends: typeof friends;

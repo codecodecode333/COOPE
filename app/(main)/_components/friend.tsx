@@ -35,6 +35,7 @@ const FriendPage = () => {
     const sendMessage = useMutation(api.chat.sendMessage);
     //useQuery 훅을 사용할 때 "skip"을 인자로 전달하면 쿼리가 실행되지 않음. 즉, 조건부로 쿼리를 실행하고 싶을 때 사용할 수 있는 특별한 값~
     const messages = useQuery(api.chat.getMessages, selectedFriend ? { roomId: selectedFriend.roomId } : "skip");
+    type MessageType = FunctionReturnType<typeof api.chat.getMessages>;
     const fileInput = useRef<HTMLInputElement>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const chatScrollRef = useRef(null); //채팅을 맨 아래를 항상 비추도록 하기 위한 것
