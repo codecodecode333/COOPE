@@ -27,9 +27,12 @@ export default defineSchema({
     coverImage: v.optional(v.string()),
     icon: v.optional(v.string()),
     isPublished: v.boolean(),
+    workspaceId: v.string(),
   })
   .index("by_user", ["userId"])
-  .index("by_user_parent", ["userId","parentDocument"]),
+  .index("by_user_parent", ["userId","parentDocument"])
+  .index("by_workspace", ["workspaceId"])
+  .index("by_workspace_parent", ["workspaceId", "parentDocument"]),
   inquiryDetails: defineTable({
     userId: v.string(),
     userName: v.string(), 
@@ -61,7 +64,8 @@ export default defineSchema({
     email: v.string(),
     externalId: v.string(),
     userIcon: v.string()
-  }).index("byExternalId", ["externalId"]),
+  }).index("byExternalId", ["externalId"])
+    .index("by_email", ["email"]),
   friends: defineTable({
     userId: v.string(),
     friendId: v.string(),
@@ -101,4 +105,15 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_user_timestamp", ["userId", "timestamp"]),
+  workspaces: defineTable({
+    name:  v.string(),
+    createdBy:  v.string(),// userId
+  }),
+  workspaceMembers: defineTable({
+    userId:  v.string(),
+    workspaceId:  v.string(),
+    role:  v.string(), // 'owner' | 'editor' | 'viewer'
+  }).index('by_user', ['userId'])
+    .index('by_workspace', ['workspaceId'])
+    .index('by_user_workspace', ['userId', 'workspaceId']),
 });

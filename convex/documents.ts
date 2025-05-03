@@ -3,6 +3,7 @@ import {v} from 'convex/values'
 import {mutation,query} from './_generated/server'
 import {Doc,Id} from './_generated/dataModel'
 
+
 export const archive = mutation({
   args:{id:v.id("documents")},
   handler:async (context,args) => {
@@ -52,6 +53,7 @@ export const archive = mutation({
 
 export const getSidebar = query({
   args:{
+    workspaceId: v.string(),
     parentDocument:v.optional(v.id("documents"))
   },
   handler:async (context,args) => {
@@ -65,8 +67,9 @@ export const getSidebar = query({
 
     const documents = await context.db
     .query("documents")
-    .withIndex("by_user_parent",(q) => q.eq('userId',userId)
-    .eq('parentDocument',args.parentDocument))
+    .withIndex("by_workspace_parent", q =>
+      q.eq("workspaceId", args.workspaceId).eq("parentDocument", args.parentDocument)
+    )
     .filter(q => q.eq(q.field("isArchived"),false))
     .order('desc')
     .collect()
@@ -78,6 +81,7 @@ export const getSidebar = query({
 export const create = mutation({
   args:{
     title:v.string(),
+    workspaceId: v.string(),
     parentDocument:v.optional(v.id('documents'))
   },
   handler:async (context,args) => {
@@ -87,14 +91,13 @@ export const create = mutation({
       throw new Error('Not authenticated')
     }
 
-    const userId = identity.subject
-
     const document = await context.db.insert('documents',{
       title:args.title,
       parentDocument:args.parentDocument,
-      userId,
+      userId: identity.subject,
       isArchived:false,
-      isPublished:false
+      isPublished:false,
+      workspaceId: args.workspaceId,
     })
 
     return document
@@ -102,7 +105,11 @@ export const create = mutation({
 })
 
 export const getTrash = query({
-  handler:async (context) => {
+  args:{
+    workspaceId: v.string(),
+    parentDocument:v.optional(v.id("documents"))
+  },
+  handler:async (context, args) => {
     const identity = await context.auth.getUserIdentity()
 
     if (!identity) {
@@ -112,7 +119,9 @@ export const getTrash = query({
     const userId = identity.subject
 
     const documents = await context.db.query('documents')
-    .withIndex('by_user',q => q.eq('userId',userId))
+    .withIndex("by_workspace_parent", q =>
+      q.eq("workspaceId", args.workspaceId).eq("parentDocument", args.parentDocument)
+    )
     .filter(q => q.eq(q.field('isArchived'),true))
     .order('desc')
     .collect()
@@ -207,7 +216,11 @@ export const remove = mutation({
 })
 
 export const getSearch = query({
-  handler:async (context) => {
+  args:{
+    workspaceId: v.string(),
+    parentDocument:v.optional(v.id("documents"))
+  },
+  handler:async (context, args) => {
    
     const identity = await context.auth.getUserIdentity()
 
@@ -218,7 +231,9 @@ export const getSearch = query({
     const userId = identity.subject
     
     const documents = await context.db.query('documents')
-    .withIndex('by_user',q => q.eq('userId',userId))
+    .withIndex("by_workspace_parent", q =>
+      q.eq("workspaceId", args.workspaceId).eq("parentDocument", args.parentDocument)
+    )
     .filter(q => q.eq(q.field('isArchived'),false))
     .order('desc')
     .collect()
@@ -228,33 +243,38 @@ export const getSearch = query({
 })
 
 export const getById = query({
-  args:{documentId:v.id('documents')},
-  handler:async (context,args) => {
-    const identity = await context.auth.getUserIdentity()
+  args: {
+    documentId: v.id("documents"),
+    workspaceId: v.string(),
+  },
 
-    const document = await context.db.get(args.documentId)
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    const document = await ctx.db.get(args.documentId);
 
-    if (!document) {
-      throw new Error("Not found")
+    // 존재하지 않거나 워크스페이스가 다르면 null
+    if (!document || document.workspaceId !== args.workspaceId) {
+      return null;
     }
 
+    // 공개된 문서라면 누구나 볼 수 있음
     if (document.isPublished && !document.isArchived) {
-      return document
+      return document;
     }
 
+    // 로그인 안 됐으면 비공개 문서 접근 불가
     if (!identity) {
-      throw new Error("Not authenticated")
+      throw new Error("Not authenticated");
     }
 
-    const userId = identity.subject
-
-    if (document.userId !== userId)  {
-      throw new Error("Unauthorized")
+    // 작성자가 아니면 접근 불가
+    if (document.userId !== identity.subject) {
+      throw new Error("Unauthorized");
     }
-    
-    return document
-  }
-})
+
+    return document;
+  },
+});
 
 
 export const update = mutation({

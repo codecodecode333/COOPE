@@ -7,25 +7,46 @@ import { useMutation } from "convex/react";
 import {api} from "@/convex/_generated/api";
 import { toast } from "sonner";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-
-
+import { useParams, useRouter } from "next/navigation";
 
 function DocumentsPage() {
   const { user } = useUser();
   const router = useRouter();
   const create = useMutation(api.documents.create);
+  const { workspaceId } = useParams() as { workspaceId?: string };
 
-  const onCreate = () => {
-    const promise = create({ title: "Untitled" }).then((documentId) =>
-      router.push(`/documents/${documentId}`),
-    );
+    if (!workspaceId) {
+    console.log("waiting for hydration...");
+    return null;
+    }
 
-    toast.promise(promise, {
-      loading: "Creatiing a new note...",
-      success: "New note created!",
-      error: "Failed to create a new note."
-    });
+  const onCreate = async () => {
+
+    console.log("🚀 onCreate 호출됨");
+    if (!workspaceId) {
+      console.error("❌ workspaceId is undefined");
+      return;
+    }
+  
+    try {
+      const promise = create({
+        title: "Untitled",
+        workspaceId,
+      });
+  
+      toast.promise(promise, {
+        loading: "Creating a new note...",
+        success: "New note created!",
+        error: "Failed to create a new note.",
+      });
+  
+      const documentId = await promise;
+      console.log("✅ created docId:", documentId);
+  
+      router.push(`/workspace/${workspaceId}/documents/${documentId}`);
+    } catch (err) {
+      console.error("❌ Create failed:", err);
+    }
   };
 
   return (

@@ -1,13 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronsLeft, MenuIcon, Plus, PlusCircle, Search, Settings, Trash, User } from "lucide-react";
+import { ChevronsLeft, MenuIcon, Plus, PlusCircle, Search, Settings, Trash, User, UserPlus  } from "lucide-react";
 import { useRef, useState } from "react";
 import UserItem from "./user-item";
 import { useMutation } from "convex/react";
 
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
+import { useInvite } from "@/hooks/use-invite";
 
 import { api } from "@/convex/_generated/api";
 import { Item } from "./item";
@@ -22,6 +23,7 @@ import {
 import { TrashBox } from "./trash-box";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { Navbar } from "./navbar";
+import  InviteModal  from "@/components/modals/invite-modal";
 
 
 export const Navigation = () => {
@@ -33,8 +35,15 @@ export const Navigation = () => {
     const originalWidthRef = useRef<number>(240); // 원래 너비를 저장하는 ref
     const isMobile = useMediaQuery("(max-width:768px)");
     const [isCollapsed,setIsCollapsed] = useState(!isMobile);
+    const { workspaceId } = useParams() as { workspaceId?: string };
+
+    if (!workspaceId) {
+    console.log("waiting for hydration...");
+    return null;
+    }
     
     const search = useSearch();
+    const invite = useInvite();
     const settings = useSettings();
     const params = useParams();
     const router = useRouter();
@@ -50,11 +59,14 @@ export const Navigation = () => {
         const startWidth = sidebarRef.current?.getBoundingClientRect().width;
 
         const handleMouseMove = (moveEvent: MouseEvent) => {
-            if (sidebarRef.current) {
+            if (sidebarRef.current && navbarRef.current) {
                 const newWidth = startWidth! + (moveEvent.clientX - startX);
                 // 최소 및 최대 너비 적용
                 if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
                     sidebarRef.current.style.width = `${newWidth}px`;
+
+                    navbarRef.current.style.left = `${newWidth}px`;
+                    navbarRef.current.style.width = `calc(100% - ${newWidth + 17}px)`;
                 }
             }
         };
@@ -100,8 +112,8 @@ export const Navigation = () => {
     };
 
     const handleCreate = () => {
-        const promise = create({ title: "Untitled" }).then((documentId) =>
-            router.push(`/documents/${documentId}`),
+        const promise = create({ title: "Untitled", workspaceId: workspaceId, }).then((documentId) =>
+            router.push(`/workspace/${workspaceId}/documents/${documentId}`),
         );
 
         toast.promise(promise, {
@@ -128,7 +140,12 @@ export const Navigation = () => {
                 )}
             >   
                 <div className="p-4">
-                    <img src="/logo-dark.png" alt="Logo" className="w-44 h-auto ml-2" />
+                    <img 
+                        src="/logo-dark.png" 
+                        alt="Logo" 
+                        className="w-44 h-auto ml-2 cursor-pointer hover:opacity-80 transition" 
+                        onClick={() => router.push('/')}
+                    />
                 </div>
                 <div 
                     role="button"
@@ -142,6 +159,16 @@ export const Navigation = () => {
                 </div>
                 <div>
                     <UserItem/>
+                    <Item
+                        label="Invite"
+                        icon={UserPlus}
+                        onClick={invite.onOpen}
+                    />
+                    {invite.isOpen && (
+                    <InviteModal
+                    workspaceId={workspaceId}
+                    />
+                    )}
                     <Item
                         label="Search"
                         icon={Search}
@@ -188,9 +215,9 @@ export const Navigation = () => {
             <div
                 ref={navbarRef}
                 className={cn(
-                    "absolute top-0 z-[99999] left-60 w-[calc(100%-249px)]",
+                    "absolute top-0 z-[9999]",
                     isResetting && "transition-all ease-in-out duration-300",
-                    isCollapsed ? "left-60" : "left-0"
+                    isCollapsed ? "left-60 w-[calc(100%-257px)]" : "left-0 w-[calc(100%-17px)]"
                 )}
             >
                 {!!params.documentId ? (

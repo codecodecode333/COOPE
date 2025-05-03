@@ -24,6 +24,7 @@ import type * as inquiries from "../inquiries.js";
 import type * as notices from "../notices.js";
 import type * as rooms from "../rooms.js";
 import type * as users from "../users.js";
+import type * as workspace from "../workspace.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   notices: typeof notices;
   rooms: typeof rooms;
   users: typeof users;
+  workspace: typeof workspace;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
