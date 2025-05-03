@@ -8,6 +8,7 @@ import {
   MediaKind,
   RtpParameters,
   AppData,
+  Transport
 } from "mediasoup-client/types";
 import { Device as MediaDevice } from "mediasoup-client";
 import "webrtc-adapter";
@@ -40,9 +41,9 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
   const [myProducerId, setMyProducerId] = useState<{ camera?: string; screen?: string }>({});
   const deviceRef = useRef<MediaDevice | null>(null); //device도 useState로할시 같은 현상이 나타나서 create해줄때랑 그리고 device를 쓰는 상황에 이걸씀
   const [hasRemoteScreenShare, setHasRemoteScreenShare] = useState(false); //상대방이 공유하고 있는 화면이 있을때 내 비디오 css를 바꿔주기 위해 추가한 것
+  const sendTransportRef = useRef<Transport | null>(null);
+  const recvTransportRef = useRef<Transport | null>(null);
 
-
-  
   //디바이스 생성
   const createDevice = async (rtpCapabilities: RtpCapabilities) => {
     const dev = new MediaDevice();
@@ -61,6 +62,10 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
   };
 
   const createRecvTransport = async () => {
+    if (recvTransportRef.current) {
+      console.log("[Transport] 기존 수신 transport 사용");
+      return recvTransportRef.current;
+    }
     console.log("[Transport] createRecvTransport 요청");
     const transportInfo = await new Promise<TransportOptions>((res, rej) => {
       const socket = socketRef.current;
@@ -86,6 +91,7 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
       console.log("[Transport] 수신 트랜스포트 상태:", state);
     });
 
+    recvTransportRef.current = transport;
     return transport;
   };
 
@@ -114,11 +120,17 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
 
     const consumer = await transport.consume({ id, producerId, kind, rtpParameters });
     const stream = new MediaStream([consumer.track]);
+    console.log(" new stream: ", stream);
+    console.log(" Video track settings:", consumer.track.getSettings?.());
 
     const videoEl = document.createElement("video");
     videoEl.srcObject = stream;
     videoEl.autoplay = true;
     videoEl.playsInline = true;
+    videoEl.addEventListener("loadedmetadata", () => console.log("✅ metadata loaded"));
+    videoEl.addEventListener("canplay", () => console.log("✅ can play"));
+    videoEl.addEventListener("play", () => console.log("▶️ playing"));
+    videoEl.addEventListener("error", (e) => console.error("❌ video error", e));
     videoEl.setAttribute("data-producer-id", producerId);
     videoEl.setAttribute("data-type", appData.type);
     videoEl.className = "w-full h-full object-cover border border-white";
@@ -174,10 +186,19 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
     return () => {
       console.log("[Socket] 클린업: 연결 해제");
       sock.disconnect();
+      sendTransportRef.current?.close();
+      recvTransportRef.current?.close();
+      sendTransportRef.current = null;
+      recvTransportRef.current = null;
     };
   }, [setupSocket]);
 
   const createSendTransport = async () => {
+    if (sendTransportRef.current) {
+      console.log("[Transport] 기존 송신 transport 제거");
+      sendTransportRef.current.close();
+      sendTransportRef.current = null;
+    }
     console.log("[Transport] createSendTransport 요청");
     const transportInfo = await new Promise<TransportOptions>((res) => {
       socketRef.current?.emit("create-transport", {}, res);
@@ -188,7 +209,7 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
     transport.on("connect", ({ dtlsParameters }, callback) => {
       console.log("[Transport] 송신 연결 요청");
       socketRef.current?.emit("transport-connect", { dtlsParameters });
-      callback();
+      callback(); //여기서 중복 호출되면 안됨
     });
 
     transport.on("produce", ({ kind, rtpParameters, appData }, callback) => {
@@ -199,7 +220,7 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
         callback({ id });
       });
     });
-
+    sendTransportRef.current = transport;
     return transport;
   };
 
@@ -212,6 +233,12 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
 
     const transport = await createSendTransport();
     for (const track of stream.getTracks()) {
+      console.log("🎥 track 상태:", {
+        kind: track.kind,
+        enabled: track.enabled,
+        muted: track.muted,
+        readyState: track.readyState,
+      });
       await transport.produce({ track, appData: { type } });
     }
 
@@ -283,13 +310,13 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
           className="absolute top-0 left-0 w-full h-full flex flex-wrap justify-center items-center gap-2"
         />
         <video
-    ref={localVideoRef}
-    autoPlay
-    muted
-    playsInline
-    className={`absolute ${hasRemoteScreenShare ? "w-1/4 bottom-4 right-4" : "w-full h-full"} object-cover border border-white rounded`}
-  />
-        
+          ref={localVideoRef}
+          autoPlay
+          muted
+          playsInline
+          className={`absolute ${hasRemoteScreenShare ? "w-1/4 bottom-4 right-4" : "w-full h-full"} object-cover border border-white rounded`}
+        />
+
       </div>
       <div className="flex justify-center gap-4">
         <Button onClick={toggleCamera}>{camEnabled ? <VideoOff /> : <Video />}</Button>

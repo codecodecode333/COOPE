@@ -120,6 +120,7 @@ io.on("connection", (socket) => {
   socket.on("transport-connect", async ({ dtlsParameters }) => {
     const roomId = socketToRoom.get(socket.id);
     const transport = peers.get(roomId!)?.get(socket.id)?.transports.at(-1);
+
     await transport?.connect({ dtlsParameters });
     console.log("[Transport] 연결됨");
   });

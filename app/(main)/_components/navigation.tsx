@@ -125,7 +125,7 @@ export const Navigation = () => {
 
     const onRedirectFriends = () => {
         toggleSidebar();
-        router.push("/friends");
+        router.push(`/workspace/${workspaceId}/friends`);
     }
 
     return (
