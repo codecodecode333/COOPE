@@ -15,16 +15,14 @@ interface BannerProps {
 
 export function Banner ({documentId}:BannerProps) {
   const { workspaceId } = useParams() as { workspaceId?: string };
-
-    if (!workspaceId) {
-    console.log("waiting for hydration...");
-    return null;
-    }
   const router = useRouter()
 
   const remove = useMutation(api.documents.remove)
   const restore = useMutation(api.documents.restore)
-
+  if (!workspaceId) {
+    console.log("waiting for hydration...");
+    return null;
+    }
   const onRemove = () => {
     const promise = remove({id:documentId})
 

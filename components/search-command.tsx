@@ -28,14 +28,10 @@ export function SearchCommand () {
   const isOpen = useSearch(store => store.isOpen)
   const onClose = useSearch(store => store.onClose)
 
-  if (!workspaceId) {
-    console.log("waiting for hydration...")
-    return null
-  }
-
-  const documents = useQuery(api.documents.getSearch, {
-    workspaceId: workspaceId as string,
-  })
+  const documents = useQuery(
+    api.documents.getSearch,
+    workspaceId ? { workspaceId } : "skip"
+  );
 
   useEffect(() => {
     setIsMounted(true)
@@ -52,6 +48,10 @@ export function SearchCommand () {
     return () => document.removeEventListener('keydown', down)
   }, [toggle])
 
+  if (!workspaceId) {
+    console.log("waiting for hydration...")
+    return null
+  }
   const onSelect = (documentId: string) => {
     router.push(`/workspace/${workspaceId}/documents/${documentId}`)
     onClose()

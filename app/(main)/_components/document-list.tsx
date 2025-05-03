@@ -22,12 +22,7 @@ export const DocumentList = ({
   const router = useRouter();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  const workspaceId = params.workspaceId as string;
-
-  if (!workspaceId) {
-    console.log("waiting for hydration...");
-    return null;
-  }
+  const { workspaceId } = useParams() as { workspaceId?: string };
 
   const onExpand = (documentId: string) => {
     setExpanded((prevExpanded) => ({
@@ -36,11 +31,19 @@ export const DocumentList = ({
     }));
   };
 
-  const documents = useQuery(api.documents.getSidebar, {
-    workspaceId,
-    parentDocument: parentDocumentId,
-  });
-
+  const documents = useQuery(
+    api.documents.getSidebar,
+    workspaceId
+      ? {
+          workspaceId,
+          parentDocument: parentDocumentId,
+        }
+      : "skip"
+  );
+  if (!workspaceId) {
+    console.log("waiting for hydration...");
+    return null;
+  }
   const onRedirect = (documentId: string) => {
     router.push(`/workspace/${workspaceId}/documents/${documentId}`);
   };

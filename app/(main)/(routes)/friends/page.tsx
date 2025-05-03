@@ -13,11 +13,14 @@ import FriendRequestList from "../../_components/friendRequestList";
 const ListOfFriends = () => {
   const [searchUser, setSearchUser] = useState("");
   const { user } = useUser();
+  
+  const friendList = useQuery(
+    api.friends.getFriendsList,
+    user?.id ? { id: user.id } : "skip"
+  );
   if (!user) {
     return;
   }
-  const friendList = useQuery(api.friends.get, { id: user?.id });
-
 
   if (friendList === undefined) {
     return (

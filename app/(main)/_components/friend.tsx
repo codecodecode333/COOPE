@@ -20,18 +20,18 @@ const convexSiteUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
 
 const FriendPage = () => {
     const { user } = useUser();
-
-    if (!user) {
-        return;
-    }
-    console.log(convexSiteUrl);
-
-    const friendsList = useQuery(api.friends.getFriendsList, { id: user?.id });
+    const createOrGetChatRoom = useMutation(api.rooms.createOrGetChatRoom);
+    const friendsList = useQuery(
+        api.friends.getFriendsList,
+        user?.id ? { id: user.id } : "skip"
+    );
     const [messageInput, setMessageInput] = useState("");
+    if (!user) {
+        return <div className="h-full flex justify-center items-center">Loading user info...</div>;
+    }
     type FriendsListType = FunctionReturnType<typeof api.friends.getFriendsList>; // getFriendList를 통해 받아오는 return 값을 type으로 가지게 함
     type FriendType = FriendsListType[number]; // 친구 목록의 단일 타입을 얻기 위해서 필요
     const [selectedFriend, setSelectedFriend] = useState<FriendType & { roomId: string } | null>(null);
-    const createOrGetChatRoom = useMutation(api.rooms.createOrGetChatRoom);
     const sendMessage = useMutation(api.chat.sendMessage);
     //useQuery 훅을 사용할 때 "skip"을 인자로 전달하면 쿼리가 실행되지 않음. 즉, 조건부로 쿼리를 실행하고 싶을 때 사용할 수 있는 특별한 값~
     const messages = useQuery(api.chat.getMessages, selectedFriend ? { roomId: selectedFriend.roomId } : "skip");
