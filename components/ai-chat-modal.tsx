@@ -24,14 +24,6 @@ export const AIChatModal = ({
   const [currentResponse, setCurrentResponse] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, currentResponse]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -128,8 +120,19 @@ export const AIChatModal = ({
         <DialogHeader>
           <DialogTitle>AI Assistant</DialogTitle>
         </DialogHeader>
-        <div className="h-[500px] overflow-y-auto mb-4">
-          {messages.map((message, index) => (
+        <div className="h-[500px] overflow-y-auto mb-4 flex flex-col-reverse">
+          <div ref={messagesEndRef} />
+          {isLoading && !currentResponse && (
+            <div className="text-center">
+              <div className="animate-pulse">생각중...</div>
+            </div>
+          )}
+          {isLoading && currentResponse && (
+            <div className="mb-4 p-4 rounded-lg bg-gray-50 max-w-[80%]">
+              {renderMessage(currentResponse)}
+            </div>
+          )}
+          {[...messages].reverse().map((message, index) => (
             <div
               key={index}
               className={`mb-4 p-4 rounded-lg ${
@@ -141,17 +144,6 @@ export const AIChatModal = ({
               {renderMessage(message.content)}
             </div>
           ))}
-          {isLoading && currentResponse && (
-            <div className="mb-4 p-4 rounded-lg bg-gray-50 max-w-[80%]">
-              {renderMessage(currentResponse)}
-            </div>
-          )}
-          {isLoading && !currentResponse && (
-            <div className="text-center">
-              <div className="animate-pulse">생각중...</div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
         </div>
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
