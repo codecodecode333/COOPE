@@ -34,10 +34,27 @@ export async function POST(req: Request) {
         },
       ],
       model: "gpt-4-turbo-preview",
+      stream: true
     });
 
-    return NextResponse.json({
-      response: completion.choices[0].message.content,
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of completion) {
+          const content = chunk.choices[0]?.delta?.content || '';
+          if (content) {
+            controller.enqueue(encoder.encode(content));
+          }
+        }
+        controller.close();
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain',
+        'Transfer-Encoding': 'chunked',
+      },
     });
   } catch (error) {
     console.error("Error:", error);
