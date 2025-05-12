@@ -43,6 +43,8 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
   const [hasRemoteScreenShare, setHasRemoteScreenShare] = useState(false); //상대방이 공유하고 있는 화면이 있을때 내 비디오 css를 바꿔주기 위해 추가한 것
   const sendTransportRef = useRef<Transport | null>(null);
   const recvTransportRef = useRef<Transport | null>(null);
+  const [myProducers, setMyProducers] = useState<{ [key in StreamType]?: any }>({});
+
 
   //디바이스 생성
   const createDevice = async (rtpCapabilities: RtpCapabilities) => {
@@ -120,32 +122,45 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
 
     const consumer = await transport.consume({ id, producerId, kind, rtpParameters });
     const stream = new MediaStream([consumer.track]);
-    console.log(" new stream: ", stream);
-    console.log(" Video track settings:", consumer.track.getSettings?.());
+    console.log(" 새 스트림: ", stream);
+    console.log(" 비디오 트랙 세팅:", consumer.track.getSettings?.());
+    if (kind == "video") {
+      const videoEl = document.createElement("video");
+      videoEl.srcObject = stream;
+      videoEl.autoplay = true;
+      videoEl.playsInline = true;
+      videoEl.addEventListener("loadedmetadata", () => console.log("✅ metadata loaded"));
+      videoEl.addEventListener("canplay", () => console.log("✅ can play"));
+      videoEl.addEventListener("play", () => console.log("▶️ playing"));
+      videoEl.addEventListener("error", (e) => console.error("❌ video error", e));
+      videoEl.setAttribute("data-producer-id", producerId);
+      videoEl.setAttribute("data-type", appData.type);
+      videoEl.className = "w-full h-full object-cover border border-white";
 
-    const videoEl = document.createElement("video");
-    videoEl.srcObject = stream;
-    videoEl.autoplay = true;
-    videoEl.playsInline = true;
-    videoEl.addEventListener("loadedmetadata", () => console.log("✅ metadata loaded"));
-    videoEl.addEventListener("canplay", () => console.log("✅ can play"));
-    videoEl.addEventListener("play", () => console.log("▶️ playing"));
-    videoEl.addEventListener("error", (e) => console.error("❌ video error", e));
-    videoEl.setAttribute("data-producer-id", producerId);
-    videoEl.setAttribute("data-type", appData.type);
-    videoEl.className = "w-full h-full object-cover border border-white";
-
-    setHasRemoteScreenShare(true);
-    const container = remoteContainerRef.current;
-    if (container) {
-      const existing = container.querySelector(`[data-producer-id="${producerId}"]`);
-      if (existing) {
-        container.replaceChild(videoEl, existing);
-        console.log("[DOM] 기존 video 엘리먼트 교체");
-      } else {
+      setHasRemoteScreenShare(true);
+      const container = remoteContainerRef.current;
+      if (container) {
+        const existing = container.querySelector(`[data-producer-id="${producerId}"]`);
+        if (existing) {
+          container.removeChild(existing);
+          console.log("[DOM] 기존 video 제거 후 새로 추가");
+        }
         container.appendChild(videoEl);
-        console.log("[DOM] 새로운 video 엘리먼트 추가");
+        console.log("[DOM] 추가된 비디오 수:", container.children.length);
       }
+    }
+    if (kind == "audio") {
+      const audioEl = document.createElement("audio");
+      audioEl.srcObject = stream;
+      audioEl.autoplay = true;
+      audioEl.controls = false;
+
+      audioEl.setAttribute("data-producer-id", producerId);
+
+      document.body.appendChild(audioEl);
+
+      console.log(`[Dom] 오디오 추가됨`)
+
     }
   }, []);
 
@@ -174,8 +189,11 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
     sock.on("producer-closed", (producerId: string) => {
       console.log("[Socket] producer 종료됨:", producerId);
       const container = remoteContainerRef.current;
-      const el = container?.querySelector(`[data-producer-id="${producerId}"]`);
-      if (el) container?.removeChild(el);
+      const el = container?.querySelector(`[data-producer-id="${producerId}"]`)
+        ?? document.querySelector(`audio[data-producer-id="${producerId}"]`);
+
+      if (el) el.remove();
+
     });
 
     return sock;
@@ -194,84 +212,106 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
   }, [setupSocket]);
 
   const createSendTransport = async () => {
-    if (sendTransportRef.current) {
-      console.log("[Transport] 기존 송신 transport 제거");
-      sendTransportRef.current.close();
-      sendTransportRef.current = null;
-    }
+    // 항상 새로운 transport 생성
+    sendTransportRef.current?.close();
+    sendTransportRef.current = null;
+
     console.log("[Transport] createSendTransport 요청");
     const transportInfo = await new Promise<TransportOptions>((res) => {
       socketRef.current?.emit("create-transport", {}, res);
     });
+
     const dev = device ?? (await createDevice(await getRtpCapabilities()));
     const transport = dev.createSendTransport(transportInfo);
 
     transport.on("connect", ({ dtlsParameters }, callback) => {
       console.log("[Transport] 송신 연결 요청");
       socketRef.current?.emit("transport-connect", { dtlsParameters });
-      callback(); //여기서 중복 호출되면 안됨
+      callback();
     });
 
     transport.on("produce", ({ kind, rtpParameters, appData }, callback) => {
       console.log("[Transport] produce 요청:", kind, appData);
       socketRef.current?.emit("transport-produce", { kind, rtpParameters, appData }, ({ id }: { id: string }) => {
-        const typedAppData = appData as { type: StreamType };
-        setMyProducerId((prev) => ({ ...prev, [typedAppData.type]: id }));
         callback({ id });
       });
     });
+
     sendTransportRef.current = transport;
     return transport;
   };
 
+
   const startMedia = async (type: StreamType) => {
     console.log(`[Media] ${type} 시작`);
+
     const stream =
       type === "camera"
         ? await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         : await navigator.mediaDevices.getDisplayMedia({ video: true });
 
     const transport = await createSendTransport();
-    for (const track of stream.getTracks()) {
-      console.log("🎥 track 상태:", {
-        kind: track.kind,
-        enabled: track.enabled,
-        muted: track.muted,
-        readyState: track.readyState,
-      });
-      await transport.produce({ track, appData: { type } });
-    }
+
+    const newProducers: { [key in StreamType]?: any } = {};
 
     if (type === "camera") {
+      const videoTrack = stream.getVideoTracks()[0];
+      const audioTrack = stream.getAudioTracks()[0];
+
+      if (videoTrack) {
+        const producer = await transport.produce({ track: videoTrack, appData: { type } });
+        newProducers.camera = producer;
+      }
+
+      if (audioTrack) {
+        const producer = await transport.produce({ track: audioTrack, appData: { type } });
+      }
+
       setCameraStream(stream);
       setCamEnabled(true);
     } else {
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        const producer = await transport.produce({ track: videoTrack, appData: { type } });
+        newProducers.screen = producer;
+      }
+
       setScreenStream(stream);
-    }
 
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = stream;
-    }
-
-    if (type === "screen") {
       stream.getVideoTracks()[0].addEventListener("ended", () => {
         console.log("[Media] 화면 공유 종료됨");
         stopMedia("screen");
+        stopMedia("camera");
       });
     }
+
+    // producer 저장
+    setMyProducers((prev) => ({ ...prev, ...newProducers }));
+
+    // 로컬 화면 연결
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = stream;
+    }
   };
+
+
 
   const stopMedia = (type: StreamType) => {
     console.log(`[Media] ${type} 종료`);
     const stream = type === "camera" ? cameraStream : screenStream;
+
+    // 트랙 종료
     stream?.getTracks().forEach((t) => t.stop());
 
-    const socket = socketRef.current;
-    if (socket && myProducerId[type]) {
-      socket.emit("close-producer", myProducerId[type]);
-      setMyProducerId((prev) => ({ ...prev, [type]: undefined }));
+    // producer 종료
+    const producer = myProducers[type];
+    if (producer) {
+      producer.close();
+      socketRef.current?.emit("close-producer", producer.id);
+      setMyProducers((prev) => ({ ...prev, [type]: undefined }));
     }
 
+    // stream 상태 초기화
     if (type === "camera") {
       setCameraStream(null);
       setCamEnabled(false);
@@ -279,10 +319,20 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
       setScreenStream(null);
     }
 
-    if (!cameraStream && !screenStream && localVideoRef.current) {
+    // 비디오 ref도 해제
+    if (localVideoRef.current) {
       localVideoRef.current.srcObject = null;
     }
+
+
+    // 모든 producer 종료 시 transport 제거
+    const remaining = Object.values(myProducers).filter(Boolean).length;
+    if (remaining === 1) {
+      sendTransportRef.current?.close();
+      sendTransportRef.current = null;
+    }
   };
+
 
   const toggleCamera = () => {
     console.log("[UI] 카메라 토글");

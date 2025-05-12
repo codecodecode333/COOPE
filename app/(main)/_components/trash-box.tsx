@@ -19,17 +19,17 @@ export function TrashBox() {
   const restore = useMutation(api.documents.restore);
   const remove = useMutation(api.documents.remove);
 
-  const workspaceId = params.workspaceId;
+  const { workspaceId } = params as { workspaceId?: string };
+
+  const documents = useQuery(
+    api.documents.getTrash,
+    workspaceId ? { workspaceId } : "skip"
+  );
 
   if (!workspaceId || typeof workspaceId !== "string") {
     console.log("waiting for hydration...");
     return null;
   }
-
-  const documents = useQuery(api.documents.getTrash, {
-    workspaceId
-  });
-
   const filteredDocuments = documents?.filter((document) =>
     document.title.toLowerCase().includes(search.toLowerCase())
   );
