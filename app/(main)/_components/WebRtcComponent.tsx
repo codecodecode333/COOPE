@@ -19,7 +19,7 @@ interface WebRtcProps {
   roomId: string;
 }
 
-type StreamType = "camera" | "screen";
+type StreamType = "camera" | "screen" | "mic";
 
 type ProducerInfo = {
   producerId: string;
@@ -34,9 +34,10 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
 
   const socketRef = useRef<ReturnType<typeof io> | null>(null); // useState를 통해 socket을 뿌렸더니 비동기적으로 업데이트 돼서 이전값이라 socket connected가 계속 false로 바뀌는 현상때문에 uesRef로 바꿈
   const [device, setDevice] = useState<MediaDevice | null>(null); // device
-  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null); //카메라
-  const [screenStream, setScreenStream] = useState<MediaStream | null>(null); //화면
-  const [micEnabled, setMicEnabled] = useState(true); //마이크
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null); //카메라 스트림
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null); //화면 스트림
+  const [micStream, setMicStream] = useState<MediaStream | null>(null); //마이크 스트림
+  const [micEnabled, setMicEnabled] = useState(false); //마이크
   const [camEnabled, setCamEnabled] = useState(false);
   const [myProducerId, setMyProducerId] = useState<{ camera?: string; screen?: string }>({});
   const deviceRef = useRef<MediaDevice | null>(null); //device도 useState로할시 같은 현상이 나타나서 create해줄때랑 그리고 device를 쓰는 상황에 이걸씀
@@ -44,7 +45,6 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
   const sendTransportRef = useRef<Transport | null>(null);
   const recvTransportRef = useRef<Transport | null>(null);
   const [myProducers, setMyProducers] = useState<{ [key in StreamType]?: any }>({});
-
 
   //디바이스 생성
   const createDevice = async (rtpCapabilities: RtpCapabilities) => {
@@ -212,42 +212,49 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
   }, [setupSocket]);
 
   const createSendTransport = async () => {
-    // 항상 새로운 transport 생성
-    sendTransportRef.current?.close();
-    sendTransportRef.current = null;
-
+    // ✅ 이미 transport가 존재하면 재사용
+    if (sendTransportRef.current) {
+      console.log("[Transport] 기존 sendTransport 재사용");
+      return sendTransportRef.current;
+    }
+  
     console.log("[Transport] createSendTransport 요청");
+  
     const transportInfo = await new Promise<TransportOptions>((res) => {
       socketRef.current?.emit("create-transport", {}, res);
     });
-
+  
+    // ✅ device가 없으면 생성
     const dev = device ?? (await createDevice(await getRtpCapabilities()));
     const transport = dev.createSendTransport(transportInfo);
-
+  
     transport.on("connect", ({ dtlsParameters }, callback) => {
       console.log("[Transport] 송신 연결 요청");
       socketRef.current?.emit("transport-connect", { dtlsParameters });
       callback();
     });
-
+  
     transport.on("produce", ({ kind, rtpParameters, appData }, callback) => {
       console.log("[Transport] produce 요청:", kind, appData);
       socketRef.current?.emit("transport-produce", { kind, rtpParameters, appData }, ({ id }: { id: string }) => {
         callback({ id });
       });
     });
-
+  
     sendTransportRef.current = transport;
     return transport;
   };
+  
 
 
   const startMedia = async (type: StreamType) => {
     console.log(`[Media] ${type} 시작`);
 
+    stopOppositeMedia(type);
+
     const stream =
       type === "camera"
-        ? await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        ? await navigator.mediaDevices.getUserMedia({ video: true })
         : await navigator.mediaDevices.getDisplayMedia({ video: true });
 
     const transport = await createSendTransport();
@@ -256,16 +263,16 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
 
     if (type === "camera") {
       const videoTrack = stream.getVideoTracks()[0];
-      const audioTrack = stream.getAudioTracks()[0];
+      //const audioTrack = stream.getAudioTracks()[0];
 
       if (videoTrack) {
         const producer = await transport.produce({ track: videoTrack, appData: { type } });
         newProducers.camera = producer;
       }
 
-      if (audioTrack) {
+      /*if (audioTrack) {
         const producer = await transport.produce({ track: audioTrack, appData: { type } });
-      }
+      }*/
 
       setCameraStream(stream);
       setCamEnabled(true);
@@ -290,12 +297,62 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
 
     // 로컬 화면 연결
     if (localVideoRef.current) {
-      localVideoRef.current.srcObject = stream;
+      const videoTrack = stream.getVideoTracks()[0];
+      if(videoTrack){
+        const onlyVideoStream = new MediaStream([videoTrack]);
+        localVideoRef.current.srcObject = onlyVideoStream;
+      }
     }
   };
 
+  //마이크 시작
+  const startMic = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioTrack = stream.getAudioTracks()[0];
+    const transport = sendTransportRef.current ?? await createSendTransport();
+    const producer = await transport.produce({
+      track: audioTrack,
+      appData: { type: "mic" },
+    });
+    setMyProducers((prev) => ({ ...prev, mic: producer }));
+    setMicStream(stream);
+    setMicEnabled(true);
+  };
+
+  //마이크 종료
+  const stopMic = async () => {
+    console.log("[Media] 마이크 종료");
+
+    //트랙 종료
+    micStream?.getTracks().forEach((t) => t.stop());
+
+    // producer 종료
+    const producer = myProducers["mic"];
+    if (producer) {
+      producer.close();
+      socketRef.current?.emit("close-producer", producer.id);
+      setMyProducers((prev) => ({ ...prev, mic: undefined }));
+    }
+
+    //상태 초기화
+    setMicStream(null);
+    setMicEnabled(false);
+
+    // 다른 producer가 없다면 transport 정리
+    const remaining = Object.entries(myProducers)
+      .filter(([type, p]) => type !== "mic" && p)
+      .length;
+
+    if (remaining === 0) {
+      sendTransportRef.current?.close();
+      sendTransportRef.current = null;
+    }
+
+  }
 
 
+
+  // 미디어 종료
   const stopMedia = (type: StreamType) => {
     console.log(`[Media] ${type} 종료`);
     const stream = type === "camera" ? cameraStream : screenStream;
@@ -320,18 +377,23 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
     }
 
     // 비디오 ref도 해제
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = null;
-    }
 
 
     // 모든 producer 종료 시 transport 제거
     const remaining = Object.values(myProducers).filter(Boolean).length;
-    if (remaining === 1) {
+    if (remaining === 0) {
       sendTransportRef.current?.close();
       sendTransportRef.current = null;
     }
   };
+
+  const stopOppositeMedia = (type: StreamType) => {
+    if(type === "camera" && screenStream) {
+      stopMedia("screen");
+    } else if(type === "screen" && cameraStream) {
+      stopMedia("camera");
+    }
+  }
 
 
   const toggleCamera = () => {
@@ -344,12 +406,12 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
     screenStream ? stopMedia("screen") : startMedia("screen");
   };
 
-  const toggleMic = () => {
-    console.log("[UI] 마이크 토글");
-    const stream = cameraStream ?? screenStream;
-    if (!stream) return;
-    stream.getAudioTracks().forEach((t) => (t.enabled = !micEnabled));
-    setMicEnabled((prev) => !prev);
+  const toggleMic = async () => {
+    if (micEnabled) {
+      stopMic();
+    } else {
+      await startMic();
+    }
   };
 
   return (
@@ -371,7 +433,18 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
       <div className="flex justify-center gap-4">
         <Button onClick={toggleCamera}>{camEnabled ? <VideoOff /> : <Video />}</Button>
         <Button onClick={toggleScreen}>{screenStream ? <ScreenShareOff /> : <ScreenShare />}</Button>
-        <Button onClick={toggleMic}>{micEnabled ? <Mic /> : <MicOff />}</Button>
+        <Button onClick={toggleMic}>
+          {micEnabled ? (
+            <>
+              <MicOff className="mr-1" />
+            </>
+          ) : (
+            <>
+              <Mic className="mr-1" />
+            </>
+          )}
+        </Button>
+
       </div>
     </div>
   );

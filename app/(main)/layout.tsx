@@ -39,7 +39,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     <ChatProvider>
       <div className="h-full flex dark:bg-[#1F1F1F]">
         {/* 채팅 버튼 */}
-        {pathname !== '/friends' && (
+        {!pathname.includes("/friends") && (
           <Button
             type="button"
             className="fixed bottom-10 right-10 z-[9999] rounded-full"

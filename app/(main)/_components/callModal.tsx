@@ -17,7 +17,7 @@ const CallModal: React.FC<ModalProps> = ({ isOpen, onClose, roomId }) => {
         <h2 className="text-xl font-bold">통화 시작하기</h2>
         <WebRTCComponent roomId={roomId}/>
         <Button className="mt-4 px-4 py-2 rounded" onClick={onClose}>
-          닫기
+          통화종료
         </Button>
       </div>
     </div>
