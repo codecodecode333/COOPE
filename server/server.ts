@@ -1,12 +1,18 @@
+import 'dotenv/config';
+// 또는
+require('dotenv').config();
+
 // Refactored mediasoup server with separated send/recv transport tracking
-import express from "express";
+import express, { Request, Response } from "express";
 import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import { createWorker, types as mediasoupTypes } from "mediasoup";
+import { SpeechClient, protos } from '@google-cloud/speech';
 
 const app = express();
 app.use(cors());
+app.use(express.json({ limit: '10mb' })); // STT용 바디파서 확장
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -56,6 +62,46 @@ const initMediasoup = async () => {
   router = await worker.createRouter({ mediaCodecs });
   console.log("[Mediasoup] Worker & Router initialized");
 };
+
+const speechClient = new SpeechClient();
+
+app.post('/api/stt', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { audioContent } = req.body; // base64 string
+    if (!audioContent) {
+      res.status(400).json({ error: 'audioContent 누락' });
+      return;
+    }
+
+    const audio = { content: audioContent };
+    const config = {
+      encoding: protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding.WEBM_OPUS,
+      sampleRateHertz: 48000,
+      languageCode: 'ko-KR',
+    };
+    const request = { audio, config };
+    const [response] = await speechClient.recognize(request);
+    const results = response.results as protos.google.cloud.speech.v1.SpeechRecognitionResult[];
+    const transcript = results
+      .map((r) => r.alternatives && r.alternatives[0] ? r.alternatives[0].transcript : '')
+      .join('\n');
+    res.json({ transcript });
+
+    if (transcript && transcript.trim() !== "") {
+      // 요약 API 호출 및 메시지 전송
+      await sendMessageMutation({
+        roomId,
+        senderId,
+        text: transcript,
+      });
+    }
+    return;
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'STT 변환 실패' });
+    return;
+  }
+});
 
 io.on("connection", (socket) => {
   console.log("[Socket] Connected:", socket.id);
@@ -219,4 +265,5 @@ io.on("connection", (socket) => {
 server.listen(PORT, async () => {
   await initMediasoup();
   console.log(`🚀 Mediasoup server running on http://localhost:${PORT}`);
+  console.log(process.env.GOOGLE_APPLICATION_CREDENTIALS);
 });

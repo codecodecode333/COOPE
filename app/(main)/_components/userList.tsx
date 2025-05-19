@@ -18,10 +18,10 @@ const UserList = ({ userId }: { userId: string }) => {
   const [showError, setShowError] = useState(false);
 
   useEffect(() => {
-    // 새로운 유저 검색 시 에러 메시지 초기화
     setErrorMessage("");
     setShowError(false);
-  }, [userList]); // userList 변경될 때 실행
+  }, [userId]);
+
   if (!user) {
     return null;
   }
@@ -31,15 +31,13 @@ const UserList = ({ userId }: { userId: string }) => {
     return <span>그런 유저는 없어요 :/</span>;
   }
   const handleAddFriend = async () => {
-
-    if (!user.username) {
-      return null;
-    }
+    console.log("친구 추가 시도:", user.id, userList.externalId);
+    try {
     const response = await sendFriendRequest({
       userId: user.id,
       friendId: userList.externalId,
     });
-
+      console.log("친구 추가 응답:", response);
     if (!response.success && response.message) {
       // 에러 메시지를 설정하고 표시
       setErrorMessage(response.message);
@@ -55,6 +53,11 @@ const UserList = ({ userId }: { userId: string }) => {
           onClick: () => console.log("Undo"),
         },
       });
+      }
+    } catch (err) {
+      console.error("친구 추가 에러:", err);
+      setErrorMessage("친구 추가 중 오류가 발생했습니다.");
+      setShowError(true);
     }
   };
 

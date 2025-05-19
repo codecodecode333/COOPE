@@ -25,6 +25,15 @@ export const createWorkspace = mutation({
       role: 'owner',
     });
 
+    // users 테이블의 name도 workspace name으로 동기화
+    const user = await ctx.db
+      .query('users')
+      .withIndex('byExternalId', (q) => q.eq('externalId', userId))
+      .unique();
+    if (user) {
+      await ctx.db.patch(user._id, { name });
+    }
+
     return workspaceId;
   },
 });
