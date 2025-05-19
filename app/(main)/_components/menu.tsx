@@ -20,16 +20,14 @@ interface MenuProps {
 }
 
 export function Menu ({documentId}:MenuProps) {
+  const router = useRouter()
+  const {user} = useUser()
+  const archive = useMutation(api.documents.archive)
   const { workspaceId } = useParams() as { workspaceId?: string };
-
-    if (!workspaceId) {
+  if (!workspaceId) {
     console.log("waiting for hydration...");
     return null;
     }
-  const router = useRouter()
-  const {user} = useUser()
-
-  const archive = useMutation(api.documents.archive)
 
   const onArchive = () => {
     const promise = archive({id:documentId})

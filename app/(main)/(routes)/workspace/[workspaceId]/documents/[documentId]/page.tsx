@@ -32,8 +32,9 @@ export default function DocumentIdPage () {
 
   const document = useQuery(api.documents.getById,{
     documentId:params.documentId,
-    workspaceId:params.workspaceId
+    workspaceId:params.workspaceId,
   })
+  
 
   const update = useMutation(api.documents.update)
 

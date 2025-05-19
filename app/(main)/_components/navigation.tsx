@@ -40,6 +40,7 @@ export const Navigation = () => {
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
+  const { workspaceId } = params as { workspaceId?: string };
   const isWorkspacePath = pathname.startsWith("/workspace");
 
   const search = useSearch();
@@ -56,7 +57,7 @@ export const Navigation = () => {
 
   const MIN_WIDTH = 210;
   const MAX_WIDTH = 700;
-  const { workspaceId } = params as { workspaceId?: string };
+  
 
   // ❗ 조건은 아래에서 처리
   if (isWorkspacePath && !workspaceId) {
