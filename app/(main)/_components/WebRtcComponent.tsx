@@ -13,7 +13,7 @@ import {
 import { Device as MediaDevice } from "mediasoup-client";
 import "webrtc-adapter";
 import { Button } from "@/components/ui/button";
-import { Video, VideoOff, Mic, MicOff, ScreenShare, ScreenShareOff } from "lucide-react";
+import { Video, VideoOff, Mic, MicOff, ScreenShare, ScreenShareOff, NotebookPen } from "lucide-react";
 
 interface WebRtcProps {
   roomId: string;
@@ -39,7 +39,6 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
   const [micStream, setMicStream] = useState<MediaStream | null>(null); //마이크 스트림
   const [micEnabled, setMicEnabled] = useState(false); //마이크
   const [camEnabled, setCamEnabled] = useState(false);
-  const [myProducerId, setMyProducerId] = useState<{ camera?: string; screen?: string }>({});
   const deviceRef = useRef<MediaDevice | null>(null); //device도 useState로할시 같은 현상이 나타나서 create해줄때랑 그리고 device를 쓰는 상황에 이걸씀
   const [hasRemoteScreenShare, setHasRemoteScreenShare] = useState(false); //상대방이 공유하고 있는 화면이 있을때 내 비디오 css를 바꿔주기 위해 추가한 것
   const sendTransportRef = useRef<Transport | null>(null);
@@ -444,7 +443,7 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
             </>
           )}
         </Button>
-
+        <Button><NotebookPen /></Button>
       </div>
     </div>
   );
