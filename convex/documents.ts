@@ -252,29 +252,37 @@ export const getById = query({
     const identity = await ctx.auth.getUserIdentity();
     const document = await ctx.db.get(args.documentId);
 
-    // 존재하지 않거나 워크스페이스가 다르면 null
     if (!document || document.workspaceId !== args.workspaceId) {
       return null;
     }
 
-    // 공개된 문서라면 누구나 볼 수 있음
+    // 공개 문서는 누구나 볼 수 있음
     if (document.isPublished && !document.isArchived) {
       return document;
     }
 
-    // 로그인 안 됐으면 비공개 문서 접근 불가
     if (!identity) {
       throw new Error("Not authenticated");
     }
 
-    // 작성자가 아니면 접근 불가
-    if (document.userId !== identity.subject) {
+    const userId = identity.subject;
+
+    // ✅ 해당 워크스페이스의 멤버인지 확인
+    const isMember = await ctx.db
+      .query("workspaceMembers")
+      .withIndex("by_user_workspace", q =>
+        q.eq("userId", userId).eq("workspaceId", document.workspaceId)
+      )
+      .first();
+
+    if (!isMember) {
       throw new Error("Unauthorized");
     }
 
     return document;
   },
 });
+
 
 
 export const update = mutation({
