@@ -30,6 +30,8 @@ export const sendMessage = mutation({
     }
 });
 
+
+
 //메세지 가져오기
 export const getMessages = query({
     args: {

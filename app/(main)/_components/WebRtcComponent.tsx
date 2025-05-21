@@ -14,9 +14,13 @@ import { Device as MediaDevice } from "mediasoup-client";
 import "webrtc-adapter";
 import { Button } from "@/components/ui/button";
 import { Video, VideoOff, Mic, MicOff, ScreenShare, ScreenShareOff, NotebookPen } from "lucide-react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useAuth } from "@clerk/nextjs";
 
 interface WebRtcProps {
   roomId: string;
+  onRemoteVideoStream?: (stream: MediaStream) => void;
 }
 
 type StreamType = "camera" | "screen" | "mic";
@@ -28,7 +32,7 @@ type ProducerInfo = {
   socketId: string;
 };
 
-export default function WebRtcComponent({ roomId }: WebRtcProps) {
+export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcProps) {
   const localVideoRef = useRef<HTMLVideoElement>(null); // 내 비디오
   const remoteContainerRef = useRef<HTMLDivElement>(null); // 수신되는 비디오
 
@@ -44,6 +48,13 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
   const sendTransportRef = useRef<Transport | null>(null);
   const recvTransportRef = useRef<Transport | null>(null);
   const [myProducers, setMyProducers] = useState<{ [key in StreamType]?: any }>({});
+  const [recording, setRecording] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [pendingAudio, setPendingAudio] = useState<Blob | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const sendMessage = useMutation(api.chat.sendMessage);
+  const { userId } = useAuth(); // Clerk에서 유저 ID 가져옴
 
   //디바이스 생성
   const createDevice = async (rtpCapabilities: RtpCapabilities) => {
@@ -136,6 +147,7 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
       videoEl.setAttribute("data-type", appData.type);
       videoEl.className = "w-full h-full object-cover border border-white";
 
+      
       setHasRemoteScreenShare(true);
       const container = remoteContainerRef.current;
       if (container) {
@@ -147,6 +159,7 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
         container.appendChild(videoEl);
         console.log("[DOM] 추가된 비디오 수:", container.children.length);
       }
+      onRemoteVideoStream?.(stream);
     }
     if (kind == "audio") {
       const audioEl = document.createElement("audio");
@@ -413,6 +426,86 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
     }
   };
 
+  // 기록 버튼 핸들러
+  const handleRecord = async () => {
+    if (!recording) {
+      // 녹음 시작
+      if (!micStream) {
+        alert("마이크가 켜져 있어야 녹음이 가능합니다.");
+        return;
+      }
+      audioChunksRef.current = [];
+      mediaRecorderRef.current = new MediaRecorder(micStream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+      mediaRecorderRef.current.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+      mediaRecorderRef.current.start();
+      setRecording(true);
+    } else {
+      // 녹음 중지
+      setRecording(false);
+      setProcessing(true); // 주황색으로 즉시 전환
+      mediaRecorderRef.current?.stop();
+      mediaRecorderRef.current!.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
+        setPendingAudio(audioBlob); // 실제 처리는 useEffect에서!
+      };
+    }
+  };
+
+  // 처리 중 상태에서 실제 STT/요약 처리 시작
+  useEffect(() => {
+    if (processing && pendingAudio) {
+      (async () => {
+        const reader = new FileReader();
+        reader.readAsDataURL(pendingAudio);
+        reader.onloadend = async () => {
+          const base64Audio = reader.result as string;
+          // STT 서버로 전송
+          try {
+            const sttRes = await fetch("/api/stt", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ audioContent: base64Audio }),
+            });
+            
+            if (!sttRes.ok) {
+              throw new Error('STT 변환 실패');
+            }
+            
+            const sttData = await sttRes.json();
+            
+            if (!sttData.transcript) {
+              throw new Error('음성 인식 결과가 없습니다.');
+            }
+
+            // STT 결과를 메시지로 전송
+            if (userId) {
+              await sendMessage({
+                roomId,
+                senderId: userId,
+                text: sttData.transcript,
+              });
+            }
+          } catch (error) {
+            console.error('오디오 처리 중 오류:', error);
+            alert('오디오 처리 중 오류가 발생했습니다.');
+          } finally {
+            setProcessing(false); // 처리 끝 → 검정색
+            setPendingAudio(null);
+          }
+        };
+      })();
+    }
+  }, [processing, pendingAudio]);
+
+  // 버튼 색상 결정
+  let buttonColor = "bg-black";
+  if (processing) buttonColor = "bg-orange-500";
+  else if (recording) buttonColor = "bg-red-600";
+
   return (
     <div className="p-4 space-y-4">
       <div className="relative w-full aspect-video bg-black rounded overflow-hidden">
@@ -443,7 +536,13 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
             </>
           )}
         </Button>
-        <Button><NotebookPen /></Button>
+        <Button onClick={handleRecord} className={buttonColor} variant={recording ? "destructive" : "default"}>
+          {processing
+            ? "처리 중..."
+            : recording
+              ? "기록 중지"
+              : <NotebookPen />}
+        </Button>
       </div>
     </div>
   );
