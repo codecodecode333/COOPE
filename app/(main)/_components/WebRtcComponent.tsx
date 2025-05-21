@@ -14,9 +14,10 @@ import { Device as MediaDevice } from "mediasoup-client";
 import "webrtc-adapter";
 import { Button } from "@/components/ui/button";
 import { Video, VideoOff, Mic, MicOff, ScreenShare, ScreenShareOff } from "lucide-react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
+import { useRouter, useParams } from "next/navigation";
 
 interface WebRtcProps {
   roomId: string;
@@ -32,19 +33,18 @@ type ProducerInfo = {
 };
 
 export default function WebRtcComponent({ roomId }: WebRtcProps) {
-  const localVideoRef = useRef<HTMLVideoElement>(null); // 내 비디오
-  const remoteContainerRef = useRef<HTMLDivElement>(null); // 수신되는 비디오
-
-  const socketRef = useRef<ReturnType<typeof io> | null>(null); // useState를 통해 socket을 뿌렸더니 비동기적으로 업데이트 돼서 이전값이라 socket connected가 계속 false로 바뀌는 현상때문에 uesRef로 바꿈
-  const [device, setDevice] = useState<MediaDevice | null>(null); // device
-  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null); //카메라 스트림
-  const [screenStream, setScreenStream] = useState<MediaStream | null>(null); //화면 스트림
-  const [micStream, setMicStream] = useState<MediaStream | null>(null); //마이크 스트림
-  const [micEnabled, setMicEnabled] = useState(false); //마이크
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteContainerRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const [device, setDevice] = useState<MediaDevice | null>(null);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+  const [micStream, setMicStream] = useState<MediaStream | null>(null);
+  const [micEnabled, setMicEnabled] = useState(false);
   const [camEnabled, setCamEnabled] = useState(false);
   const [myProducerId, setMyProducerId] = useState<{ camera?: string; screen?: string }>({});
-  const deviceRef = useRef<MediaDevice | null>(null); //device도 useState로할시 같은 현상이 나타나서 create해줄때랑 그리고 device를 쓰는 상황에 이걸씀
-  const [hasRemoteScreenShare, setHasRemoteScreenShare] = useState(false); //상대방이 공유하고 있는 화면이 있을때 내 비디오 css를 바꿔주기 위해 추가한 것
+  const deviceRef = useRef<MediaDevice | null>(null);
+  const [hasRemoteScreenShare, setHasRemoteScreenShare] = useState(false);
   const sendTransportRef = useRef<Transport | null>(null);
   const recvTransportRef = useRef<Transport | null>(null);
   const [myProducers, setMyProducers] = useState<{ [key in StreamType]?: any }>({});
@@ -54,7 +54,15 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const sendMessage = useMutation(api.chat.sendMessage);
-  const { userId } = useAuth(); // Clerk에서 유저 ID 가져옴
+  const { userId } = useAuth();
+  const createDocument = useMutation(api.documents.create);
+  const router = useRouter();
+  const params = useParams();
+  const getSidebar = useQuery(api.documents.getSidebar, {
+    workspaceId: params.workspaceId as string,
+    parentDocument: undefined
+  });
+  const isHandledRef = useRef(false);
 
   //디바이스 생성
   const createDevice = async (rtpCapabilities: RtpCapabilities) => {
@@ -455,49 +463,124 @@ export default function WebRtcComponent({ roomId }: WebRtcProps) {
 
   // 처리 중 상태에서 실제 STT/요약 처리 시작
   useEffect(() => {
-    if (processing && pendingAudio) {
+    if (processing && pendingAudio && !isHandledRef.current) {
+      isHandledRef.current = true;
       (async () => {
         const reader = new FileReader();
         reader.readAsDataURL(pendingAudio);
         reader.onloadend = async () => {
           const base64Audio = reader.result as string;
-          // STT 서버로 전송
           try {
+            // 1. STT 변환
             const sttRes = await fetch("/api/stt", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ audioContent: base64Audio }),
             });
-            
-            if (!sttRes.ok) {
-              throw new Error('STT 변환 실패');
-            }
-            
+            if (!sttRes.ok) throw new Error('STT 변환 실패');
             const sttData = await sttRes.json();
+            if (!sttData.transcript) throw new Error('음성 인식 결과가 없습니다.');
+
+            // 2. 요약 생성
+            const summaryRes = await fetch("/api/summary", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text: sttData.transcript }),
+            });
+            if (!summaryRes.ok) throw new Error('요약 생성 실패');
+            const summaryData = await summaryRes.json();
+            const summary = summaryData.summary || "요약 생성 실패";
+
+            // 3. 문서 제목 및 본문 생성
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
+            const title = `${year}-${month}-${day} ${hour}:${minute} 통화 녹음`;
+            const content = JSON.stringify([
+              {
+                id: "1",
+                type: "paragraph",
+                props: {},
+                content: [
+                  {
+                    type: "text",
+                    text: summary,
+                    styles: {}
+                  }
+                ]
+              },
+              {
+                id: "2",
+                type: "paragraph",
+                props: {},
+                content: [
+                  {
+                    type: "text",
+                    text: "---",
+                    styles: {}
+                  }
+                ]
+              },
+              {
+                id: "3",
+                type: "paragraph",
+                props: {},
+                content: [
+                  {
+                    type: "text",
+                    text: sttData.transcript,
+                    styles: {}
+                  }
+                ]
+              }
+            ]);
+
+            // 4. workspaceId 추출
+            let workspaceId = params.workspaceId;
+            if (Array.isArray(workspaceId)) workspaceId = workspaceId[0];
+            if (!workspaceId || typeof workspaceId !== 'string') throw new Error('워크스페이스 ID를 찾을 수 없습니다.');
+
+            // 5. "통화 녹음" 부모 문서 찾기 또는 생성
+            const parentTitle = "통화 녹음";
+            const existingParentDoc = getSidebar?.find(doc => doc.title === parentTitle);
             
-            if (!sttData.transcript) {
-              throw new Error('음성 인식 결과가 없습니다.');
+            let parentDocId;
+            if (!existingParentDoc) {
+              // 부모 문서가 없으면 생성
+              const newParentDoc = await createDocument({
+                title: parentTitle,
+                workspaceId,
+              });
+              parentDocId = newParentDoc;
+            } else {
+              parentDocId = existingParentDoc._id;
             }
 
-            // STT 결과를 메시지로 전송
-            if (userId) {
-              await sendMessage({
-                roomId,
-                senderId: userId,
-                text: sttData.transcript,
-              });
-            }
+            // 6. 녹음 내용을 하위 문서로 생성
+            const documentId = await createDocument({
+              title,
+              workspaceId,
+              parentDocument: parentDocId,
+              content,
+            });
+
+            // 7. 새로 생성된 문서 페이지로 이동
+            router.push(`/workspace/${workspaceId}/documents/${documentId}`);
           } catch (error) {
             console.error('오디오 처리 중 오류:', error);
             alert('오디오 처리 중 오류가 발생했습니다.');
           } finally {
-            setProcessing(false); // 처리 끝 → 검정색
+            setProcessing(false);
             setPendingAudio(null);
+            isHandledRef.current = false;
           }
         };
       })();
     }
-  }, [processing, pendingAudio]);
+  }, [processing, pendingAudio, getSidebar]);
 
   // 버튼 색상 결정
   let buttonColor = "bg-black";

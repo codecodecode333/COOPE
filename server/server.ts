@@ -8,7 +8,11 @@ import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import { createWorker, types as mediasoupTypes } from "mediasoup";
-import { SpeechClient, protos } from '@google-cloud/speech';
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 const app = express();
 app.use(cors());
@@ -63,8 +67,6 @@ const initMediasoup = async () => {
   console.log("[Mediasoup] Worker & Router initialized");
 };
 
-const speechClient = new SpeechClient();
-
 app.post('/api/stt', async (req: Request, res: Response): Promise<void> => {
   try {
     const { audioContent } = req.body; // base64 string
@@ -73,28 +75,32 @@ app.post('/api/stt', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const audio = { content: audioContent };
-    const config = {
-      encoding: protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding.WEBM_OPUS,
-      sampleRateHertz: 48000,
-      languageCode: 'ko-KR',
-    };
-    const request = { audio, config };
-    const [response] = await speechClient.recognize(request);
-    const results = response.results as protos.google.cloud.speech.v1.SpeechRecognitionResult[];
-    const transcript = results
-      .map((r) => r.alternatives && r.alternatives[0] ? r.alternatives[0].transcript : '')
-      .join('\n');
-    res.json({ transcript });
+    // base64 데이터에서 실제 오디오 데이터만 추출
+    const base64Audio = audioContent.replace(/^data:audio\/\w+;codecs=opus;base64,/, '');
+    
+    // base64를 Buffer로 변환
+    const audioBuffer = Buffer.from(base64Audio, 'base64');
 
-    if (transcript && transcript.trim() !== "") {
-      // 요약 API 호출 및 메시지 전송
-      await sendMessageMutation({
-        roomId,
-        senderId,
-        text: transcript,
-      });
+    // Whisper API 호출을 위한 파일 생성
+    const file = new File([audioBuffer], 'audio.webm', { type: 'audio/webm' });
+
+    // Whisper API 호출
+    const response = await openai.audio.transcriptions.create({
+      file: file,
+      model: "whisper-1",
+      language: "ko",
+      response_format: "text"
+    });
+
+    // 응답이 문자열이므로 그대로 transcript로 사용
+    const transcript = response.toString();
+
+    if (!transcript || transcript.trim() === "") {
+      res.status(400).json({ error: '음성 인식 결과가 없습니다.' });
+      return;
     }
+
+    res.json({ transcript });
     return;
   } catch (err) {
     console.error(err);
