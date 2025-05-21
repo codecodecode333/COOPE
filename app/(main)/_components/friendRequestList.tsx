@@ -9,6 +9,7 @@ import { GenericId } from "convex/values";
 const FriendRequestList = () => {
     const { user } = useUser();
     const acceptFriendRequest = useMutation(api.friends.acceptFriendRequest);
+    
     if (!user) {
         return;
     }

@@ -136,10 +136,10 @@ export const Navigation = () => {
     });
   };
 
-  const onRedirectFriends = () => {
-    toggleSidebar();
-    router.push("/friends");
-  };
+    const onRedirectFriends = () => {
+        toggleSidebar();
+        router.push(`/workspace/${workspaceId}/friends`);
+    }
 
   return (
     <>
