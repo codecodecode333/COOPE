@@ -82,7 +82,8 @@ export const create = mutation({
   args:{
     title:v.string(),
     workspaceId: v.string(),
-    parentDocument:v.optional(v.id('documents'))
+    parentDocument:v.optional(v.id('documents')),
+    content: v.optional(v.string())
   },
   handler:async (context,args) => {
     const identity = await context.auth.getUserIdentity()
@@ -98,6 +99,7 @@ export const create = mutation({
       isArchived:false,
       isPublished:false,
       workspaceId: args.workspaceId,
+      content: args.content ?? ""
     })
 
     return document

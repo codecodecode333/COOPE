@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SpeechClient, protos } from "@google-cloud/speech";
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,41 +13,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "오디오 데이터가 없습니다." }, { status: 400 });
     }
 
-    const client = new SpeechClient();
-
     // base64 데이터에서 실제 오디오 데이터만 추출
     const base64Audio = audioContent.replace(/^data:audio\/\w+;codecs=opus;base64,/, '');
     
-    const audio = { content: base64Audio };
-    const config: protos.google.cloud.speech.v1.IRecognitionConfig = {
-      encoding: protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding.WEBM_OPUS,
-      sampleRateHertz: 48000,
-      languageCode: "ko-KR",
-      model: "default",
-      useEnhanced: true,
-      enableAutomaticPunctuation: true
-    };
-    
-    const request: protos.google.cloud.speech.v1.IRecognizeRequest = { audio, config };
+    // base64를 Buffer로 변환
+    const audioBuffer = Buffer.from(base64Audio, 'base64');
 
-    const [response] = await client.recognize(request);
-    const results = response.results as protos.google.cloud.speech.v1.SpeechRecognitionResult[];
-    
-    if (!results || results.length === 0) {
-      return NextResponse.json({ error: "음성 인식 결과가 없습니다." }, { status: 400 });
-    }
+    // Whisper API 호출을 위한 파일 생성
+    const file = new File([audioBuffer], 'audio.webm', { type: 'audio/webm' });
 
-    // 음성 인식 결과를 그대로 반환
-    let transcript = results
-      .map((r) => r.alternatives?.[0]?.transcript || "")
-      .filter(text => text.trim() !== "")
-      .join(" ");
+    // Whisper API 호출
+    const response = await openai.audio.transcriptions.create({
+      file: file,
+      model: "whisper-1",
+      language: "ko",
+      response_format: "text"
+    });
 
-    // 후보정: 연속 공백 제거, 불필요한 추임새(음, 어, 저기 등) 제거
-    transcript = transcript
-      .replace(/(음|어|저기|아)[,\.\s]/g, ' ') // 추임새 제거(간단 예시)
-      .replace(/\s{2,}/g, ' ') // 연속 공백 제거
-      .trim();
+    // 응답이 문자열이므로 그대로 transcript로 사용
+    const transcript = response.toString();
 
     if (!transcript || transcript.trim() === "") {
       return NextResponse.json({ error: "음성 인식 결과가 없습니다." }, { status: 400 });

@@ -3,13 +3,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require("dotenv/config");
+// 또는
+require('dotenv').config();
 // Refactored mediasoup server with separated send/recv transport tracking
 const express_1 = __importDefault(require("express"));
 const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
 const cors_1 = __importDefault(require("cors"));
 const mediasoup_1 = require("mediasoup");
-const speech_1 = require("@google-cloud/speech");
+const openai_1 = __importDefault(require("openai"));
+const openai = new openai_1.default({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json({ limit: '10mb' })); // STT용 바디파서 확장
@@ -42,7 +48,6 @@ const initMediasoup = async () => {
     router = await worker.createRouter({ mediaCodecs });
     console.log("[Mediasoup] Worker & Router initialized");
 };
-const speechClient = new speech_1.SpeechClient();
 app.post('/api/stt', async (req, res) => {
     try {
         const { audioContent } = req.body; // base64 string
@@ -50,18 +55,25 @@ app.post('/api/stt', async (req, res) => {
             res.status(400).json({ error: 'audioContent 누락' });
             return;
         }
-        const audio = { content: audioContent };
-        const config = {
-            encoding: speech_1.protos.google.cloud.speech.v1.RecognitionConfig.AudioEncoding.LINEAR16,
-            sampleRateHertz: 16000,
-            languageCode: 'ko-KR',
-        };
-        const request = { audio, config };
-        const [response] = await speechClient.recognize(request);
-        const results = response.results;
-        const transcript = results
-            .map((r) => r.alternatives && r.alternatives[0] ? r.alternatives[0].transcript : '')
-            .join('\n');
+        // base64 데이터에서 실제 오디오 데이터만 추출
+        const base64Audio = audioContent.replace(/^data:audio\/\w+;codecs=opus;base64,/, '');
+        // base64를 Buffer로 변환
+        const audioBuffer = Buffer.from(base64Audio, 'base64');
+        // Whisper API 호출을 위한 파일 생성
+        const file = new File([audioBuffer], 'audio.webm', { type: 'audio/webm' });
+        // Whisper API 호출
+        const response = await openai.audio.transcriptions.create({
+            file: file,
+            model: "whisper-1",
+            language: "ko",
+            response_format: "text"
+        });
+        // 응답이 문자열이므로 그대로 transcript로 사용
+        const transcript = response.toString();
+        if (!transcript || transcript.trim() === "") {
+            res.status(400).json({ error: '음성 인식 결과가 없습니다.' });
+            return;
+        }
         res.json({ transcript });
         return;
     }
@@ -213,4 +225,5 @@ io.on("connection", (socket) => {
 server.listen(PORT, async () => {
     await initMediasoup();
     console.log(`🚀 Mediasoup server running on http://localhost:${PORT}`);
+    console.log(process.env.GOOGLE_APPLICATION_CREDENTIALS);
 });

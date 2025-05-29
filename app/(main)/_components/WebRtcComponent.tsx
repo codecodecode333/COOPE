@@ -14,9 +14,10 @@ import { Device as MediaDevice } from "mediasoup-client";
 import "webrtc-adapter";
 import { Button } from "@/components/ui/button";
 import { Video, VideoOff, Mic, MicOff, ScreenShare, ScreenShareOff, NotebookPen } from "lucide-react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
+import { useRouter, useParams } from "next/navigation";
 
 interface WebRtcProps {
   roomId: string;
@@ -54,7 +55,15 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const sendMessage = useMutation(api.chat.sendMessage);
-  const { userId } = useAuth(); // Clerk에서 유저 ID 가져옴
+  const { userId } = useAuth();
+  const createDocument = useMutation(api.documents.create);
+  const router = useRouter();
+  const params = useParams();
+  const getSidebar = useQuery(api.documents.getSidebar, {
+    workspaceId: params.workspaceId as string,
+    parentDocument: undefined
+  });
+  const isHandledRef = useRef(false);
 
   //디바이스 생성
   const createDevice = async (rtpCapabilities: RtpCapabilities) => {
@@ -457,49 +466,124 @@ export default function WebRtcComponent({ roomId, onRemoteVideoStream }: WebRtcP
 
   // 처리 중 상태에서 실제 STT/요약 처리 시작
   useEffect(() => {
-    if (processing && pendingAudio) {
+    if (processing && pendingAudio && !isHandledRef.current) {
+      isHandledRef.current = true;
       (async () => {
         const reader = new FileReader();
         reader.readAsDataURL(pendingAudio);
         reader.onloadend = async () => {
           const base64Audio = reader.result as string;
-          // STT 서버로 전송
           try {
+            // 1. STT 변환
             const sttRes = await fetch("/api/stt", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ audioContent: base64Audio }),
             });
-            
-            if (!sttRes.ok) {
-              throw new Error('STT 변환 실패');
-            }
-            
+            if (!sttRes.ok) throw new Error('STT 변환 실패');
             const sttData = await sttRes.json();
+            if (!sttData.transcript) throw new Error('음성 인식 결과가 없습니다.');
+
+            // 2. 요약 생성
+            const summaryRes = await fetch("/api/summary", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text: sttData.transcript }),
+            });
+            if (!summaryRes.ok) throw new Error('요약 생성 실패');
+            const summaryData = await summaryRes.json();
+            const summary = summaryData.summary || "요약 생성 실패";
+
+            // 3. 문서 제목 및 본문 생성
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
+            const title = `${year}-${month}-${day} ${hour}:${minute} 통화 녹음`;
+            const content = JSON.stringify([
+              {
+                id: "1",
+                type: "paragraph",
+                props: {},
+                content: [
+                  {
+                    type: "text",
+                    text: summary,
+                    styles: {}
+                  }
+                ]
+              },
+              {
+                id: "2",
+                type: "paragraph",
+                props: {},
+                content: [
+                  {
+                    type: "text",
+                    text: "---",
+                    styles: {}
+                  }
+                ]
+              },
+              {
+                id: "3",
+                type: "paragraph",
+                props: {},
+                content: [
+                  {
+                    type: "text",
+                    text: sttData.transcript,
+                    styles: {}
+                  }
+                ]
+              }
+            ]);
+
+            // 4. workspaceId 추출
+            let workspaceId = params.workspaceId;
+            if (Array.isArray(workspaceId)) workspaceId = workspaceId[0];
+            if (!workspaceId || typeof workspaceId !== 'string') throw new Error('워크스페이스 ID를 찾을 수 없습니다.');
+
+            // 5. "통화 녹음" 부모 문서 찾기 또는 생성
+            const parentTitle = "통화 녹음";
+            const existingParentDoc = getSidebar?.find(doc => doc.title === parentTitle);
             
-            if (!sttData.transcript) {
-              throw new Error('음성 인식 결과가 없습니다.');
+            let parentDocId;
+            if (!existingParentDoc) {
+              // 부모 문서가 없으면 생성
+              const newParentDoc = await createDocument({
+                title: parentTitle,
+                workspaceId,
+              });
+              parentDocId = newParentDoc;
+            } else {
+              parentDocId = existingParentDoc._id;
             }
 
-            // STT 결과를 메시지로 전송
-            if (userId) {
-              await sendMessage({
-                roomId,
-                senderId: userId,
-                text: sttData.transcript,
-              });
-            }
+            // 6. 녹음 내용을 하위 문서로 생성
+            const documentId = await createDocument({
+              title,
+              workspaceId,
+              parentDocument: parentDocId,
+              content,
+            });
+
+            // 7. 새로 생성된 문서 페이지로 이동
+            router.push(`/workspace/${workspaceId}/documents/${documentId}`);
           } catch (error) {
             console.error('오디오 처리 중 오류:', error);
             alert('오디오 처리 중 오류가 발생했습니다.');
           } finally {
-            setProcessing(false); // 처리 끝 → 검정색
+            setProcessing(false);
             setPendingAudio(null);
+            isHandledRef.current = false;
           }
         };
       })();
     }
-  }, [processing, pendingAudio]);
+  }, [processing, pendingAudio, getSidebar]);
 
   // 버튼 색상 결정
   let buttonColor = "bg-black";
