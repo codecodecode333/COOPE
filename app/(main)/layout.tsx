@@ -13,6 +13,7 @@ import { Toaster } from 'sonner';
 import { AIChatModal } from '@/components/ai-chat-modal';
 import { ChatProvider } from '@/components/chat-context';
 
+
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <ChatProvider>
-      <div className="h-full flex dark:bg-[#1F1F1F]">
+      <div className="h-full flex dark:bg-[#1F1F1F] ">
         {/* 채팅 버튼 */}
         {!pathname.includes("/friends") && (
           <Button

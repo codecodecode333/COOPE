@@ -11,6 +11,7 @@ import {
   Trash,
   User,
   UserPlus,
+  Home,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import UserItem from "./user-item";
@@ -19,6 +20,7 @@ import { useMutation } from "convex/react";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
 import { useInvite } from "@/hooks/use-invite";
+
 
 import { api } from "@/convex/_generated/api";
 import { Item } from "./item";
@@ -42,6 +44,7 @@ export const Navigation = () => {
   const router = useRouter();
   const { workspaceId } = params as { workspaceId?: string };
   const isWorkspacePath = pathname.startsWith("/workspace");
+  const isFriendPage = pathname.includes("/friends");
 
   const search = useSearch();
   const invite = useInvite();
@@ -97,22 +100,27 @@ export const Navigation = () => {
       if (prev) {
         let currentWidth = sidebarRef.current!.getBoundingClientRect().width;
         const interval = setInterval(() => {
-          if (currentWidth > 0) {
+          if (sidebarRef.current && navbarRef.current) {
             currentWidth -= 10;
-            sidebarRef.current!.style.width = `${currentWidth}px`;
+            sidebarRef.current!.style.width = `${currentWidth}px`; 
+            navbarRef.current.style.left = `6px`;
+            navbarRef.current.style.width = `99%`;
           } else {
-            sidebarRef.current!.style.width = `0px`;
+            if (sidebarRef.current) sidebarRef.current!.style.width = `0px`; 
+            if (navbarRef.current) navbarRef.current.style.left = `6px`;   
             clearInterval(interval);
           }
         }, 1);
       } else {
         let currentWidth = 0;
         sidebarRef.current!.style.width = "0";
+        
         const interval = setInterval(() => {
           if (currentWidth < originalWidthRef.current) {
             currentWidth += 10;
             sidebarRef.current!.style.width = `${currentWidth}px`;
           } else {
+            if (navbarRef.current) navbarRef.current.style.left = `${currentWidth}px`;
             clearInterval(interval);
           }
         }, 1);
@@ -140,15 +148,20 @@ export const Navigation = () => {
         toggleSidebar();
         router.push(`/workspace/${workspaceId}/friends`);
     }
+    
+    const onRedirect = () => {
+      router.push(`/workspace/${workspaceId}/documents`)
+    }; 
 
   return (
     <>
       <aside
         ref={sidebarRef}
         className={cn(
-          "group/sidebar h-full bg-black overflow-y-auto relative flex w-60 flex-col z-[99999] rounded-r-xl",
+          "group/sidebar h-full bg-black overflow-y-auto overflow-hidden relative flex w-60 flex-col z-[99998] ",
           isCollapsed ? "w-60" : "w-0",
-          isResetting && "transition-all ease-in-out duration-300"
+          isResetting && "transition-all ease-in-out duration-300",
+          isFriendPage ? "rounded-none" : "rounded-r-lg"
         )}
       >
         <div className="p-4">
@@ -168,6 +181,7 @@ export const Navigation = () => {
         </div>
         <div>
           <UserItem />
+          <Item onClick={onRedirect} label="Home" icon={Home} />
           <Item label="Invite" icon={UserPlus} onClick={invite.onOpen} />
           {invite.isOpen && <InviteModal workspaceId={safeWorkspaceId} />}
           <Item label="Search" icon={Search} isSearch onClick={search.onOpen} />
@@ -208,11 +222,11 @@ export const Navigation = () => {
         {!!params.documentId ? (
           <Navbar isCollapsed={isCollapsed} onResetWidth={toggleSidebar} />
         ) : (
-          <nav className="bg-transparent px-3 py-2 w-full">
+          <nav className="relative bg-transparent px-3 py-2 w-full">
             {!isCollapsed && (
               <MenuIcon
                 role="button"
-                className="h-6 w-6 text-muted-foreground"
+                className="absolute top-3 h-6 w-6 text-muted-foreground "
                 onClick={toggleSidebar}
               />
             )}
