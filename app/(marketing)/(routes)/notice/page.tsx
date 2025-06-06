@@ -92,7 +92,7 @@ const Notice = () => {
                         <p>공지사항이 없습니다.</p>
                     ) : (
                         <>
-                            <Table className="w-full">
+                            <Table className="w-full sm:text-sm">
                                 <TableCaption>공지사항은 사이트의 업데이트를 가장 빠르게 알려줍니다 :)</TableCaption>
                                 <TableHeader>
                                     <TableRow>

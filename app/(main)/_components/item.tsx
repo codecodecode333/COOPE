@@ -92,12 +92,16 @@ export function Item ({
   const ChevronIcon = expanded ? ChevronDown : ChevronRight
 
 return (
-    <div className={cn(`group min-h-[27px] text-sm py-1 pr-3 w-full hover:bg-primary/5
-    flex items-center text-muted-foreground font-medium`,
-    active && 'bg-primary/5 text-white')}
-     onClick={onClick} 
-     role="button" 
-     style={{paddingLeft:level ? `${(level * 12) + 12}px` :'12px'}}
+    <div
+      className={cn(
+        "group min-h-[27px] text-sm py-1 pr-3 w-full flex items-center rounded-md transition",
+        active
+          ? "bg-[#191919] text-[#D1D1D1] font-semibold"
+          : "text-muted-foreground hover:bg-[#292929] dark:hover:bg-[#292929]"
+      )}
+      onClick={onClick}
+      role="button"
+      style={{ paddingLeft: level ? `${(level * 12) + 12}px` : "12px" }}
     >
       {!!id && (
         <div className="h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 mr-1" 

@@ -48,7 +48,7 @@ export const Heading = () => {
       <h3 className="text-base sm:text-xl md:text-2xl font-medium">
         협업을 새롭게 정의하다
       </h3>
-      <Logo />
+      <div className="sm:w-full w-full"><Logo /></div>
       {isLoading && (
         <div className="w-full flex items-center justify-center">
           <Spinner size="lg" />

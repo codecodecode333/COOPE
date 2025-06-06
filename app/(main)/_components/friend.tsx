@@ -26,9 +26,6 @@ const FriendPage = () => {
         user?.id ? { id: user.id } : "skip"
     );
     const [messageInput, setMessageInput] = useState("");
-    if (!user) {
-        return <div className="h-full flex justify-center items-center">Loading user info...</div>;
-    }
     type FriendsListType = FunctionReturnType<typeof api.friends.getFriendsList>; // getFriendList를 통해 받아오는 return 값을 type으로 가지게 함
     type FriendType = FriendsListType[number]; // 친구 목록의 단일 타입을 얻기 위해서 필요
     const [selectedFriend, setSelectedFriend] = useState<FriendType & { roomId: string } | null>(null);
@@ -41,12 +38,14 @@ const FriendPage = () => {
     const chatScrollRef = useRef(null); //채팅을 맨 아래를 항상 비추도록 하기 위한 것
     const bottomRef = useRef<HTMLDivElement | null>(null); //채팅을 맨 아래를 항상 비추도록 하기 위한 것22
     const [isModalOpen, setIsModalOpen] = useState(false);//전화 모달
-
     useEffect(() => {
         if (bottomRef.current) {
             bottomRef.current.scrollIntoView({ behavior: "auto" });
         }
     })
+    if (!user) {
+        return <div className="h-full flex justify-center items-center">Loading user info...</div>;
+    }
     const handleMessageInput = (e: any) => {
         setMessageInput(e.target.value);
     }

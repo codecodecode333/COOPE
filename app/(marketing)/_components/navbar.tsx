@@ -8,6 +8,9 @@ import Link from "next/link";
 import { Spinner } from "@/components/spinner";
 import { SignInButton, useClerk, UserButton } from '@clerk/clerk-react';  // useClerk 훅 사용
 import { useConvexAuth } from "convex/react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 //import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 const Links = [
@@ -19,6 +22,7 @@ const Links = [
 export const Navbar = () => {
     const { isAuthenticated, isLoading } = useConvexAuth();
     const scrolled = useScrollTop();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const { signOut } = useClerk();  // useClerk 훅을 사용하여 signOut 메서드 가져오기
 
@@ -29,7 +33,9 @@ export const Navbar = () => {
         });
     };
 
-    
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    }
 
     return (
         <div className={cn(
@@ -39,7 +45,13 @@ export const Navbar = () => {
             <Link href="/"><Logo /></Link>
             <div className="md:ml-auto md:justify-end
             justify-between w-full flex items-center gap-x-10">
-                <nav>
+                {/* 햄버거 메뉴 아이콘(모바일에서만 보임) */}
+                <Button onClick={toggleMobileMenu} variant={"ghost"}
+                className="md:hidden ml-auto p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <Menu />
+                </Button>
+                {/* 데스크톱 nav */}
+                <nav className="hidden md:flex">
                  <div>
                     <ul className="flex space-x-4 gap-x-10">
                         {
@@ -66,16 +78,53 @@ export const Navbar = () => {
                                 </li>
                             </>
                         )}
-                        
                     </ul>
                  </div>
                 </nav>
-                {isAuthenticated && !isLoading && (
-                    <>
-                        <UserButton />
-                    </>
+                {/* 모바일 nav */}
+                {isMobileMenuOpen && (
+                    <nav className="absolute top-full left-0 w-full bg-background dark:bg-[#1F1F1F] border-b shadow-sm md:hidden p-6">
+                        <ul className="flex flex-col space-y-4">
+                            {
+                                Links.map((link) => (
+                                    <li key={link.href} className="relative group" onClick={toggleMobileMenu}>
+                                        <Link href={link.href} className="capitalize">
+                                            {link.text}
+                                        </Link>
+                                        <span className="block max-w-0 group-hover:max-w-full transition-all duration-500 h-0.5 bg-black"></span>
+                                    </li>
+                                ))
+                            }
+                            {isLoading && (
+                                <li><Spinner /></li>
+                            )}
+                            {!isAuthenticated && !isLoading && (
+                                <li>
+                                    <SignInButton mode="modal">
+                                        <span onClick={toggleMobileMenu}>로그인</span>
+                                    </SignInButton>
+                                </li>
+                            )}
+                            {isAuthenticated && !isLoading && (
+                                <li>
+                                    <UserButton />
+                                </li>
+                            )}
+                            <li>
+                                <ModeToggle />
+                            </li>
+                        </ul>
+                    </nav>
                 )}
-                <ModeToggle />
+                <div className="hidden md:flex items-center gap-x-2"> {/* 데스크톱에서만 보이도록 hidden md:flex 추가 */}
+                    {isAuthenticated && !isLoading && (
+                        <UserButton />
+                    )}
+                </div>
+                {<div className="hidden md:flex gap-x-2">
+                    <ModeToggle />
+                    </div>
+                    }
             </div>
         </div>
     )

@@ -170,3 +170,87 @@ export const getDocuments = query({
       .collect();
   },
 });
+
+export const rename = mutation({
+  args: {
+    id: v.id("workspaces"),
+    name: v.string(),
+  },
+  handler: async (ctx, { id, name }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const workspace = await ctx.db.get(id);
+    if (!workspace) throw new Error("Workspace not found");
+
+    // 소유자 확인
+    const userId = identity.subject;
+    const membership = await ctx.db
+      .query("workspaceMembers")
+      .withIndex("by_user_workspace", q =>
+        q.eq("userId", userId).eq("workspaceId", id)
+      )
+      .first();
+
+    if (!membership || membership.role !== "owner") {
+      throw new Error("Only the owner can rename the workspace");
+    }
+
+    await ctx.db.patch(id, { name });
+  },
+});
+
+export const remove = mutation({
+  args: {
+    id: v.id("workspaces"),
+  },
+  handler: async (ctx, { id }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const workspace = await ctx.db.get(id);
+    if (!workspace) throw new Error("Workspace not found");
+
+    // 소유자 확인
+    const userId = identity.subject;
+    const membership = await ctx.db
+      .query("workspaceMembers")
+      .withIndex("by_user_workspace", q =>
+        q.eq("userId", userId).eq("workspaceId", id)
+      )
+      .first();
+
+    if (!membership || membership.role !== "owner") {
+      throw new Error("Only the owner can delete the workspace");
+    }
+
+    // 워크스페이스 삭제 (멤버십도 정리하면 더 좋음)
+    await ctx.db.delete(id);
+
+    const memberships = await ctx.db
+      .query("workspaceMembers")
+      .withIndex("by_workspace", q => q.eq("workspaceId", id))
+      .collect();
+
+    await Promise.all(
+      memberships.map((m) => ctx.db.delete(m._id))
+    );
+  },
+});
+
+export const getById = query({
+  args: { id: v.id("workspaces") },
+  handler: async (ctx, { id }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const workspace = await ctx.db.get(id);
+    if (!workspace) return null;
+
+    return {
+      _id: workspace._id,
+      name: workspace.name,
+      createdBy: workspace.createdBy,
+    };
+  },
+});
