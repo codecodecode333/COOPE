@@ -1,0 +1,227 @@
+import { Server, Socket } from "socket.io";
+import { types as mediasoupTypes } from "mediasoup";
+import { createRoomRouter, createWebRtcTransport } from "../mediasoup/manager";
+
+// 타입 정의
+interface Room {
+    router: mediasoupTypes.Router;
+    peers: Map<string, {
+        sendTransport?: mediasoupTypes.WebRtcTransport;
+        recvTransport?: mediasoupTypes.WebRtcTransport;
+        producers: Map<string, mediasoupTypes.Producer>;
+        consumers: Map<string, mediasoupTypes.Consumer>;
+        socketId: string;
+    }>;
+}
+
+// 메모리 저장소 (전역 변수)
+const rooms = new Map<string, Room>();
+const socketToRoom = new Map<string, string>();
+
+export const handleSocketEvents = (io: Server, socket: Socket) => {
+    console.log("[Socket] 연결됨:", socket.id);
+
+    // 방 참여 (joinRoom)
+    socket.on("joinRoom", async (roomId: string, cb) => {
+        if (!rooms.has(roomId)) {
+            const roomRouter = await createRoomRouter();
+            rooms.set(roomId, {
+                router: roomRouter,
+                peers: new Map(),
+            });
+            console.log(`[Room] 방 ${roomId} 생성됨`);
+        }
+
+        const currentRoom = rooms.get(roomId)!;
+        currentRoom.peers.set(socket.id, {
+            producers: new Map(),
+            consumers: new Map(),
+            socketId: socket.id,
+        });
+
+        socket.join(roomId);
+        socketToRoom.set(socket.id, roomId);
+
+        // 기존 프로듀서 목록 전달
+        const existingProducers = Array.from(currentRoom.peers.values())
+            .flatMap(peer => Array.from(peer.producers.values()))
+            .map(producer => ({
+                producerId: producer.id,
+                kind: producer.kind,
+                appData: producer.appData,
+                socketId: socketToRoom.get(producer.appData.socketId as string) || producer.appData.socketId,
+            }));
+
+        if (existingProducers.length > 0) {
+            socket.emit("existingProducers", existingProducers);
+        }
+
+        cb(currentRoom.router.rtpCapabilities);
+        console.log(`[Socket] 소켓 ${socket.id} -> 방 ${roomId} 조인 완료`);
+    });
+
+    // RTP Capabilities 요청
+    socket.on("getRouterRtpCapabilities", (_, cb) => {
+        const roomId = socketToRoom.get(socket.id);
+        if (roomId && rooms.has(roomId)) {
+            cb(rooms.get(roomId)!.router.rtpCapabilities);
+        } else {
+            cb(null);
+        }
+    });
+
+    // 송신 트랜스포트 생성
+    socket.on("create-transport", async (_, cb) => {
+        const roomId = socketToRoom.get(socket.id);
+        const currentRoom = rooms.get(roomId!);
+        if (!currentRoom) return cb(null);
+
+        const transport = await createWebRtcTransport(currentRoom.router);
+        const peer = currentRoom.peers.get(socket.id);
+        if (peer) peer.sendTransport = transport;
+
+        cb({
+            id: transport.id,
+            iceParameters: transport.iceParameters,
+            iceCandidates: transport.iceCandidates,
+            dtlsParameters: transport.dtlsParameters,
+        });
+    });
+
+    // 수신 트랜스포트 생성
+    socket.on("create-recv-transport", async (_, cb) => {
+        const roomId = socketToRoom.get(socket.id);
+        const currentRoom = rooms.get(roomId!);
+        if (!currentRoom) return cb(null);
+
+        const transport = await createWebRtcTransport(currentRoom.router);
+        const peer = currentRoom.peers.get(socket.id);
+        if (peer) peer.recvTransport = transport;
+
+        cb({
+            id: transport.id,
+            iceParameters: transport.iceParameters,
+            iceCandidates: transport.iceCandidates,
+            dtlsParameters: transport.dtlsParameters,
+        });
+    });
+
+    // 트랜스포트 연결
+    socket.on("transport-connect", async ({ dtlsParameters }) => {
+        const roomId = socketToRoom.get(socket.id);
+        const transport = rooms.get(roomId!)?.peers.get(socket.id)?.sendTransport;
+        if (transport) await transport.connect({ dtlsParameters });
+    });
+
+    socket.on("recv-transport-connect", async ({ dtlsParameters }, cb) => {
+        const roomId = socketToRoom.get(socket.id);
+        const transport = rooms.get(roomId!)?.peers.get(socket.id)?.recvTransport;
+        if (transport) {
+            await transport.connect({ dtlsParameters });
+            cb?.();
+        }
+    });
+
+    // 미디어 전송 시작
+    socket.on("transport-produce", async ({ kind, rtpParameters, appData }, cb) => {
+        const roomId = socketToRoom.get(socket.id);
+        const currentRoom = rooms.get(roomId!)!;
+        const peer = currentRoom.peers.get(socket.id);
+        const transport = peer?.sendTransport;
+
+        if (!transport) return cb(null);
+
+        const producer = await transport.produce({ kind, rtpParameters, appData });
+        peer?.producers.set(producer.id, producer);
+
+        producer.on("transportclose", () => {
+            peer?.producers.delete(producer.id);
+            socket.to(roomId!).emit("producer-closed", producer.id);
+        });
+
+        socket.to(roomId!).emit("new-producer", {
+            producerId: producer.id,
+            kind: producer.kind,
+            appData: producer.appData,
+            socketId: socket.id,
+        });
+
+        cb({ id: producer.id });
+    });
+
+    // 미디어 수신 시작
+    socket.on("consume", async ({ producerId, rtpCapabilities }, cb) => {
+        const roomId = socketToRoom.get(socket.id);
+        const currentRoom = rooms.get(roomId!)!;
+        const peer = currentRoom.peers.get(socket.id);
+        const transport = peer?.recvTransport;
+
+        let producerToConsume: mediasoupTypes.Producer | undefined;
+        for (const p of currentRoom.peers.values()) {
+            if (p.producers.has(producerId)) {
+                producerToConsume = p.producers.get(producerId);
+                break;
+            }
+        }
+
+        if (!producerToConsume || !transport || !currentRoom.router.canConsume({ producerId, rtpCapabilities })) {
+            return cb(null);
+        }
+
+        const consumer = await transport.consume({ producerId, rtpCapabilities, paused: false });
+        peer?.consumers.set(consumer.id, consumer);
+
+        consumer.on("producerclose", () => {
+            consumer.close();
+            peer?.consumers.delete(consumer.id);
+        });
+
+        cb({
+            id: consumer.id,
+            producerId: producerToConsume.id,
+            kind: consumer.kind,
+            rtpParameters: consumer.rtpParameters,
+            appData: producerToConsume.appData,
+        });
+    });
+
+    // 프로듀서 닫기
+    socket.on("close-producer", (producerId: string) => {
+        const roomId = socketToRoom.get(socket.id);
+        const peer = rooms.get(roomId!)?.peers.get(socket.id);
+        const producer = peer?.producers.get(producerId);
+
+        if (producer) {
+            producer.close();
+            peer?.producers.delete(producerId);
+            socket.to(roomId!).emit("producer-closed", producerId);
+        }
+    });
+
+    // 연결 해제 처리
+    socket.on("disconnect", () => {
+        const roomId = socketToRoom.get(socket.id);
+        if (!roomId || !rooms.has(roomId)) return;
+
+        const currentRoom = rooms.get(roomId)!;
+        const peer = currentRoom.peers.get(socket.id);
+
+        if (peer) {
+            peer.sendTransport?.close();
+            peer.recvTransport?.close();
+            peer.producers.forEach(p => {
+                p.close();
+                socket.to(roomId).emit("producer-closed", p.id);
+            });
+            peer.consumers.forEach(c => c.close());
+            currentRoom.peers.delete(socket.id);
+        }
+
+        if (currentRoom.peers.size === 0) {
+            currentRoom.router.close();
+            rooms.delete(roomId);
+        }
+        socketToRoom.delete(socket.id);
+        console.log(`[Socket] 연결 해제 완료: ${socket.id}`);
+    });
+};
