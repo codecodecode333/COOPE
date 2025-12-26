@@ -188,40 +188,78 @@ export const handleSocketEvents = (io: Server, socket: Socket) => {
     // 프로듀서 닫기
     socket.on("close-producer", (producerId: string) => {
         const roomId = socketToRoom.get(socket.id);
-        const peer = rooms.get(roomId!)?.peers.get(socket.id);
+        console.log(
+            `[Socket] close-producer 요청: socketId=${socket.id}, roomId=${roomId}, producerId=${producerId}`
+        );
+        const peer = roomId ? rooms.get(roomId)?.peers.get(socket.id) : undefined;
         const producer = peer?.producers.get(producerId);
 
         if (producer) {
             producer.close();
             peer?.producers.delete(producerId);
-            socket.to(roomId!).emit("producer-closed", producerId);
+            if (roomId) {
+                socket.to(roomId).emit("producer-closed", producerId);
+            }
+            console.log(
+                `[Socket] 프로듀서 닫힘: socketId=${socket.id}, roomId=${roomId}, producerId=${producerId}`
+            );
+        } else {
+            console.log(
+                `[Socket] 프로듀서 찾을 수 없음: socketId=${socket.id}, roomId=${roomId}, producerId=${producerId}`
+            );
         }
     });
 
     // 연결 해제 처리
     socket.on("disconnect", () => {
         const roomId = socketToRoom.get(socket.id);
-        if (!roomId || !rooms.has(roomId)) return;
+        console.log(`[Socket] disconnect 이벤트: socketId=${socket.id}, roomId=${roomId}`);
+        if (!roomId || !rooms.has(roomId)) {
+            console.log(
+                `[Socket] disconnect 처리할 방 없음: socketId=${socket.id}, roomId=${roomId}`
+            );
+            socketToRoom.delete(socket.id);
+            return;
+        }
 
         const currentRoom = rooms.get(roomId)!;
         const peer = currentRoom.peers.get(socket.id);
 
         if (peer) {
+            console.log(
+                `[Socket] 피어 정리 시작: socketId=${socket.id}, roomId=${roomId}, ` +
+                `producers=${peer.producers.size}, consumers=${peer.consumers.size}`
+            );
             peer.sendTransport?.close();
             peer.recvTransport?.close();
             peer.producers.forEach(p => {
                 p.close();
                 socket.to(roomId).emit("producer-closed", p.id);
+                console.log(
+                    `[Socket] disconnect 중 프로듀서 닫힘: socketId=${socket.id}, roomId=${roomId}, producerId=${p.id}`
+                );
             });
             peer.consumers.forEach(c => c.close());
             currentRoom.peers.delete(socket.id);
+            console.log(
+                `[Socket] 피어 정리 완료: socketId=${socket.id}, roomId=${roomId}, 남은 피어 수=${currentRoom.peers.size}`
+            );
+        } else {
+            console.log(
+                `[Socket] disconnect 시 피어 정보 없음: socketId=${socket.id}, roomId=${roomId}`
+            );
         }
 
         if (currentRoom.peers.size === 0) {
+            console.log(
+                `[Socket] 방에 더 이상 피어 없음, 라우터 종료: roomId=${roomId}`
+            );
             currentRoom.router.close();
             rooms.delete(roomId);
         }
         socketToRoom.delete(socket.id);
-        console.log(`[Socket] 연결 해제 완료: ${socket.id}`);
+        console.log(
+            `[Socket] 연결 해제 완료: socketId=${socket.id}, roomId=${roomId}, 전체 방 수=${rooms.size}`
+        );
     });
 };
