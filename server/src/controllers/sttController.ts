@@ -27,7 +27,12 @@ export const handleSTT = async (req: Request, res: Response) => {
             response_format: "text"
         });
 
-        res.json({ transcript: response.toString() });
+        const transcript = response.toString();
+        if (!transcript || transcript.trim().length === 0) {
+            return res.status(400).json({ error: '빈 음성 입력이거나 인식된 텍스트가 없습니다.' });
+        }
+
+        res.json({ transcript });
     } catch (err) {
         console.error("STT 변환 중 오류 발생:", err);
         const details = err instanceof Error ? err.message : 'Unknown error';
