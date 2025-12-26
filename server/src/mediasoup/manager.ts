@@ -19,6 +19,7 @@ export const createWebRtcTransport = async (router: mediasoupTypes.Router) => {
         enableUdp: true,
         enableTcp: true,
         preferUdp: true,
+        initialAvailableOutgoingBitrate: 1000000,
     });
     return transport;
 };
