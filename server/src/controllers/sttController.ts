@@ -29,6 +29,8 @@ export const handleSTT = async (req: Request, res: Response) => {
 
         res.json({ transcript: response.toString() });
     } catch (err) {
-        res.status(500).json({ error: 'STT 변환 실패' });
+        console.error("STT 변환 중 오류 발생:", err);
+        const details = err instanceof Error ? err.message : 'Unknown error';
+        res.status(500).json({ error: 'STT 변환 실패', details });
     }
 };
