@@ -27,7 +27,7 @@
 ---
 
 <details>
-  ## <summary>📁 프로젝트 구조</summary>
+  <summary>## 📁 프로젝트 구조</summary>
   ```
   📦 Coope
   ├─ .gitignore
