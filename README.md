@@ -27,276 +27,276 @@
 ---
 
 <details>
-## <summary>📁 프로젝트 구조</summary>
-```
-📦 Coope
-├─ .gitignore
-├─ .gitmessage.txt
-├─ README.md
-├─ app
-│  ├─ (auth)
-│  │  └─ (routes)
-│  │     ├─ layout.tsx
-│  │     ├─ sign-in
-│  │     │  └─ [[...sign-in]]
-│  │     │     └─ page.tsx
-│  │     └─ sign-up
-│  │        └─ [[...sign-up]]
-│  │           └─ page.tsx
-│  ├─ (main)
-│  │  ├─ (routes)
-│  │  │  ├─ friends
-│  │  │  │  └─ page.tsx
-│  │  │  └─ workspace
-│  │  │     └─ [workspaceId]
-│  │  │        ├─ documents
-│  │  │        │  ├─ [documentId]
-│  │  │        │  │  └─ page.tsx
-│  │  │        │  └─ page.tsx
-│  │  │        └─ friends
-│  │  │           └─ page.tsx
-│  │  ├─ _components
-│  │  │  ├─ WebRtcComponent.tsx
-│  │  │  ├─ addFriend.tsx
-│  │  │  ├─ banner.tsx
-│  │  │  ├─ callModal.tsx
-│  │  │  ├─ callPreJoinModal.tsx
-│  │  │  ├─ document-list.tsx
-│  │  │  ├─ friend.tsx
-│  │  │  ├─ friendRequestList.tsx
-│  │  │  ├─ invite-button.tsx
-│  │  │  ├─ item.tsx
-│  │  │  ├─ menu.tsx
-│  │  │  ├─ messageListenert.tsx
-│  │  │  ├─ miniCallPopup.tsx
-│  │  │  ├─ navbar.tsx
-│  │  │  ├─ navigation.tsx
-│  │  │  ├─ title.tsx
-│  │  │  ├─ trash-box.tsx
-│  │  │  ├─ user-item.tsx
-│  │  │  └─ userList.tsx
-│  │  └─ layout.tsx
-│  ├─ (marketing)
-│  │  ├─ (routes)
-│  │  │  ├─ csAdmin
-│  │  │  │  └─ page.tsx
-│  │  │  ├─ customerService
-│  │  │  │  └─ page.tsx
-│  │  │  ├─ function
-│  │  │  │  └─ page.tsx
-│  │  │  ├─ inquiryPage
-│  │  │  │  └─ page.tsx
-│  │  │  ├─ inquiryWrite
-│  │  │  │  └─ page.tsx
-│  │  │  ├─ introduction
-│  │  │  │  └─ page.tsx
-│  │  │  ├─ notice
-│  │  │  │  └─ page.tsx
-│  │  │  ├─ noticeEditPage
-│  │  │  │  └─ page.tsx
-│  │  │  ├─ noticePage
-│  │  │  │  └─ page.tsx
-│  │  │  └─ support
-│  │  │     └─ page.tsx
-│  │  ├─ _components
-│  │  │  ├─ ScrollToTop.tsx
-│  │  │  ├─ answerWrite.tsx
-│  │  │  ├─ answers.tsx
-│  │  │  ├─ commentForm.tsx
-│  │  │  ├─ commentList.tsx
-│  │  │  ├─ faq.tsx
-│  │  │  ├─ footer.tsx
-│  │  │  ├─ heading.tsx
-│  │  │  ├─ heroes.tsx
-│  │  │  ├─ imageModal.tsx
-│  │  │  ├─ logo.tsx
-│  │  │  ├─ modal.tsx
-│  │  │  ├─ navbar.tsx
-│  │  │  ├─ noticeWrite.tsx
-│  │  │  ├─ policy.tsx
-│  │  │  └─ term.tsx
-│  │  ├─ admin
-│  │  │  ├─ SearchUsers.tsx
-│  │  │  ├─ _actions.ts
-│  │  │  └─ page.tsx
-│  │  ├─ layout.tsx
-│  │  └─ page.tsx
-│  ├─ api
-│  │  ├─ chat
-│  │  │  └─ route.ts
-│  │  ├─ edgestore
-│  │  │  └─ [...edgestore]
-│  │  │     └─ route.ts
-│  │  ├─ stt
-│  │  │  └─ route.ts
-│  │  └─ summary
-│  │     └─ route.ts
-│  ├─ error.tsx
-│  ├─ globals.css
-│  ├─ invite
-│  │  └─ page.tsx
-│  └─ layout.tsx
-├─ components.json
-├─ components
-│  ├─ ai-chat-modal.tsx
-│  ├─ chat-context.tsx
-│  ├─ cover.tsx
-│  ├─ editor.tsx
-│  ├─ icon-picker.tsx
-│  ├─ modals
-│  │  ├─ confirm-modal.tsx
-│  │  ├─ cover-image-modal.tsx
-│  │  ├─ invite-modal.tsx
-│  │  └─ settings-modal.tsx
-│  ├─ mode-toggle.tsx
-│  ├─ providers
-│  │  ├─ convex-provider.tsx
-│  │  ├─ modal-provider.tsx
-│  │  └─ theme-provider.tsx
-│  ├─ search-command.tsx
-│  ├─ single-image-dropzone.tsx
-│  ├─ spinner.tsx
-│  ├─ toolbar.tsx
-│  └─ ui
-│     ├─ accordion.tsx
-│     ├─ alert-dialog.tsx
-│     ├─ alert.tsx
-│     ├─ avatar.tsx
-│     ├─ button.tsx
-│     ├─ card.tsx
-│     ├─ command.tsx
-│     ├─ dialog.tsx
-│     ├─ dropdown-menu.tsx
-│     ├─ form.tsx
-│     ├─ input.tsx
-│     ├─ label.tsx
-│     ├─ pagination.tsx
-│     ├─ popover.tsx
-│     ├─ radio-group.tsx
-│     ├─ resizable.tsx
-│     ├─ scroll-area.tsx
-│     ├─ separator.tsx
-│     ├─ skeleton.tsx
-│     ├─ table.tsx
-│     └─ textarea.tsx
-├─ convex
-│  ├─ README.md
-│  ├─ _generated
-│  │  ├─ api.d.ts
-│  │  ├─ api.js
-│  │  ├─ dataModel.d.ts
-│  │  ├─ server.d.ts
-│  │  └─ server.js
-│  ├─ aiChat.ts
-│  ├─ chat.ts
-│  ├─ client.ts
-│  ├─ comments.ts
-│  ├─ documents.ts
-│  ├─ friends.ts
-│  ├─ http.ts
-│  ├─ inquiries.ts
-│  ├─ notices.ts
-│  ├─ rooms.ts
-│  ├─ schema.ts
-│  ├─ tsconfig.json
-│  ├─ users.ts
-│  └─ workspace.ts
-├─ coope-stt-637f9fa4c1bb.json
-├─ dist
-│  └─ server.js
-├─ eslint.config.mjs
-├─ hooks
-│  ├─ use-cover-image.tsx
-│  ├─ use-invite.tsx
-│  ├─ use-scroll-top.tsx
-│  ├─ use-search.tsx
-│  ├─ use-settings.tsx
-│  └─ useMoveScroll.tsx
-├─ lib
-│  ├─ action.ts
-│  ├─ edgestore.ts
-│  ├─ generated
-│  │  └─ prisma
-│  │     ├─ client.d.ts
-│  │     ├─ client.js
-│  │     ├─ default.d.ts
-│  │     ├─ default.js
-│  │     ├─ edge.d.ts
-│  │     ├─ edge.js
-│  │     ├─ index-browser.js
-│  │     ├─ index.d.ts
-│  │     ├─ index.js
-│  │     ├─ package.json
-│  │     ├─ query_engine-windows.dll.node
-│  │     ├─ runtime
-│  │     │  ├─ edge-esm.js
-│  │     │  ├─ edge.js
-│  │     │  ├─ index-browser.d.ts
-│  │     │  ├─ index-browser.js
-│  │     │  ├─ library.d.ts
-│  │     │  ├─ library.js
-│  │     │  ├─ react-native.js
-│  │     │  └─ wasm.js
-│  │     ├─ schema.prisma
-│  │     ├─ wasm.d.ts
-│  │     └─ wasm.js
-│  ├─ pb.ts
-│  └─ utils.ts
-├─ middleware.ts
-├─ next.config.ts
-├─ package-lock.json
-├─ package.json
-├─ postcss.config.mjs
-├─ prisma
-│  └─ schema.prisma
-├─ public
-│  ├─ chat.png
-│  ├─ documents-dark.png
-│  ├─ documents.png
-│  ├─ empty-dark.png
-│  ├─ empty.png
-│  ├─ error-dark.png
-│  ├─ error.png
-│  ├─ example1.png
-│  ├─ example2.png
-│  ├─ file.svg
-│  ├─ fonts
-│  │  └─ PretendardVariable.woff2
-│  ├─ functionPeople.png
-│  ├─ globe.svg
-│  ├─ icons
-│  │  └─ favicon.ico
-│  ├─ introduction.png
-│  ├─ logo-dark.png
-│  ├─ logo-dark.svg
-│  ├─ logo.png
-│  ├─ logo.svg
-│  ├─ moon.png
-│  ├─ mountain.jpg
-│  ├─ next.svg
-│  ├─ reading-dark.png
-│  ├─ reading.png
-│  ├─ robot.png
-│  ├─ robot_dark.png
-│  ├─ support1.png
-│  ├─ universe.jpg
-│  ├─ vercel.svg
-│  └─ window.svg
-├─ sampleData.jsonl
-├─ server
-│  └─ server.ts
-├─ styles
-│  └─ globals.css
-├─ tailwind.config.ts
-├─ tsconfig.json
-├─ tsconfig.server.json
-├─ types
-│  └─ globals.d.ts
-└─ utils
-   ├─ audioUtils.ts
-   └─ roles.ts
-```
-©generated by [Project Tree Generator](https://woochanleee.github.io/project-tree-generator)
+  ## <summary>📁 프로젝트 구조</summary>
+  ```
+  📦 Coope
+  ├─ .gitignore
+  ├─ .gitmessage.txt
+  ├─ README.md
+  ├─ app
+  │  ├─ (auth)
+  │  │  └─ (routes)
+  │  │     ├─ layout.tsx
+  │  │     ├─ sign-in
+  │  │     │  └─ [[...sign-in]]
+  │  │     │     └─ page.tsx
+  │  │     └─ sign-up
+  │  │        └─ [[...sign-up]]
+  │  │           └─ page.tsx
+  │  ├─ (main)
+  │  │  ├─ (routes)
+  │  │  │  ├─ friends
+  │  │  │  │  └─ page.tsx
+  │  │  │  └─ workspace
+  │  │  │     └─ [workspaceId]
+  │  │  │        ├─ documents
+  │  │  │        │  ├─ [documentId]
+  │  │  │        │  │  └─ page.tsx
+  │  │  │        │  └─ page.tsx
+  │  │  │        └─ friends
+  │  │  │           └─ page.tsx
+  │  │  ├─ _components
+  │  │  │  ├─ WebRtcComponent.tsx
+  │  │  │  ├─ addFriend.tsx
+  │  │  │  ├─ banner.tsx
+  │  │  │  ├─ callModal.tsx
+  │  │  │  ├─ callPreJoinModal.tsx
+  │  │  │  ├─ document-list.tsx
+  │  │  │  ├─ friend.tsx
+  │  │  │  ├─ friendRequestList.tsx
+  │  │  │  ├─ invite-button.tsx
+  │  │  │  ├─ item.tsx
+  │  │  │  ├─ menu.tsx
+  │  │  │  ├─ messageListenert.tsx
+  │  │  │  ├─ miniCallPopup.tsx
+  │  │  │  ├─ navbar.tsx
+  │  │  │  ├─ navigation.tsx
+  │  │  │  ├─ title.tsx
+  │  │  │  ├─ trash-box.tsx
+  │  │  │  ├─ user-item.tsx
+  │  │  │  └─ userList.tsx
+  │  │  └─ layout.tsx
+  │  ├─ (marketing)
+  │  │  ├─ (routes)
+  │  │  │  ├─ csAdmin
+  │  │  │  │  └─ page.tsx
+  │  │  │  ├─ customerService
+  │  │  │  │  └─ page.tsx
+  │  │  │  ├─ function
+  │  │  │  │  └─ page.tsx
+  │  │  │  ├─ inquiryPage
+  │  │  │  │  └─ page.tsx
+  │  │  │  ├─ inquiryWrite
+  │  │  │  │  └─ page.tsx
+  │  │  │  ├─ introduction
+  │  │  │  │  └─ page.tsx
+  │  │  │  ├─ notice
+  │  │  │  │  └─ page.tsx
+  │  │  │  ├─ noticeEditPage
+  │  │  │  │  └─ page.tsx
+  │  │  │  ├─ noticePage
+  │  │  │  │  └─ page.tsx
+  │  │  │  └─ support
+  │  │  │     └─ page.tsx
+  │  │  ├─ _components
+  │  │  │  ├─ ScrollToTop.tsx
+  │  │  │  ├─ answerWrite.tsx
+  │  │  │  ├─ answers.tsx
+  │  │  │  ├─ commentForm.tsx
+  │  │  │  ├─ commentList.tsx
+  │  │  │  ├─ faq.tsx
+  │  │  │  ├─ footer.tsx
+  │  │  │  ├─ heading.tsx
+  │  │  │  ├─ heroes.tsx
+  │  │  │  ├─ imageModal.tsx
+  │  │  │  ├─ logo.tsx
+  │  │  │  ├─ modal.tsx
+  │  │  │  ├─ navbar.tsx
+  │  │  │  ├─ noticeWrite.tsx
+  │  │  │  ├─ policy.tsx
+  │  │  │  └─ term.tsx
+  │  │  ├─ admin
+  │  │  │  ├─ SearchUsers.tsx
+  │  │  │  ├─ _actions.ts
+  │  │  │  └─ page.tsx
+  │  │  ├─ layout.tsx
+  │  │  └─ page.tsx
+  │  ├─ api
+  │  │  ├─ chat
+  │  │  │  └─ route.ts
+  │  │  ├─ edgestore
+  │  │  │  └─ [...edgestore]
+  │  │  │     └─ route.ts
+  │  │  ├─ stt
+  │  │  │  └─ route.ts
+  │  │  └─ summary
+  │  │     └─ route.ts
+  │  ├─ error.tsx
+  │  ├─ globals.css
+  │  ├─ invite
+  │  │  └─ page.tsx
+  │  └─ layout.tsx
+  ├─ components.json
+  ├─ components
+  │  ├─ ai-chat-modal.tsx
+  │  ├─ chat-context.tsx
+  │  ├─ cover.tsx
+  │  ├─ editor.tsx
+  │  ├─ icon-picker.tsx
+  │  ├─ modals
+  │  │  ├─ confirm-modal.tsx
+  │  │  ├─ cover-image-modal.tsx
+  │  │  ├─ invite-modal.tsx
+  │  │  └─ settings-modal.tsx
+  │  ├─ mode-toggle.tsx
+  │  ├─ providers
+  │  │  ├─ convex-provider.tsx
+  │  │  ├─ modal-provider.tsx
+  │  │  └─ theme-provider.tsx
+  │  ├─ search-command.tsx
+  │  ├─ single-image-dropzone.tsx
+  │  ├─ spinner.tsx
+  │  ├─ toolbar.tsx
+  │  └─ ui
+  │     ├─ accordion.tsx
+  │     ├─ alert-dialog.tsx
+  │     ├─ alert.tsx
+  │     ├─ avatar.tsx
+  │     ├─ button.tsx
+  │     ├─ card.tsx
+  │     ├─ command.tsx
+  │     ├─ dialog.tsx
+  │     ├─ dropdown-menu.tsx
+  │     ├─ form.tsx
+  │     ├─ input.tsx
+  │     ├─ label.tsx
+  │     ├─ pagination.tsx
+  │     ├─ popover.tsx
+  │     ├─ radio-group.tsx
+  │     ├─ resizable.tsx
+  │     ├─ scroll-area.tsx
+  │     ├─ separator.tsx
+  │     ├─ skeleton.tsx
+  │     ├─ table.tsx
+  │     └─ textarea.tsx
+  ├─ convex
+  │  ├─ README.md
+  │  ├─ _generated
+  │  │  ├─ api.d.ts
+  │  │  ├─ api.js
+  │  │  ├─ dataModel.d.ts
+  │  │  ├─ server.d.ts
+  │  │  └─ server.js
+  │  ├─ aiChat.ts
+  │  ├─ chat.ts
+  │  ├─ client.ts
+  │  ├─ comments.ts
+  │  ├─ documents.ts
+  │  ├─ friends.ts
+  │  ├─ http.ts
+  │  ├─ inquiries.ts
+  │  ├─ notices.ts
+  │  ├─ rooms.ts
+  │  ├─ schema.ts
+  │  ├─ tsconfig.json
+  │  ├─ users.ts
+  │  └─ workspace.ts
+  ├─ coope-stt-637f9fa4c1bb.json
+  ├─ dist
+  │  └─ server.js
+  ├─ eslint.config.mjs
+  ├─ hooks
+  │  ├─ use-cover-image.tsx
+  │  ├─ use-invite.tsx
+  │  ├─ use-scroll-top.tsx
+  │  ├─ use-search.tsx
+  │  ├─ use-settings.tsx
+  │  └─ useMoveScroll.tsx
+  ├─ lib
+  │  ├─ action.ts
+  │  ├─ edgestore.ts
+  │  ├─ generated
+  │  │  └─ prisma
+  │  │     ├─ client.d.ts
+  │  │     ├─ client.js
+  │  │     ├─ default.d.ts
+  │  │     ├─ default.js
+  │  │     ├─ edge.d.ts
+  │  │     ├─ edge.js
+  │  │     ├─ index-browser.js
+  │  │     ├─ index.d.ts
+  │  │     ├─ index.js
+  │  │     ├─ package.json
+  │  │     ├─ query_engine-windows.dll.node
+  │  │     ├─ runtime
+  │  │     │  ├─ edge-esm.js
+  │  │     │  ├─ edge.js
+  │  │     │  ├─ index-browser.d.ts
+  │  │     │  ├─ index-browser.js
+  │  │     │  ├─ library.d.ts
+  │  │     │  ├─ library.js
+  │  │     │  ├─ react-native.js
+  │  │     │  └─ wasm.js
+  │  │     ├─ schema.prisma
+  │  │     ├─ wasm.d.ts
+  │  │     └─ wasm.js
+  │  ├─ pb.ts
+  │  └─ utils.ts
+  ├─ middleware.ts
+  ├─ next.config.ts
+  ├─ package-lock.json
+  ├─ package.json
+  ├─ postcss.config.mjs
+  ├─ prisma
+  │  └─ schema.prisma
+  ├─ public
+  │  ├─ chat.png
+  │  ├─ documents-dark.png
+  │  ├─ documents.png
+  │  ├─ empty-dark.png
+  │  ├─ empty.png
+  │  ├─ error-dark.png
+  │  ├─ error.png
+  │  ├─ example1.png
+  │  ├─ example2.png
+  │  ├─ file.svg
+  │  ├─ fonts
+  │  │  └─ PretendardVariable.woff2
+  │  ├─ functionPeople.png
+  │  ├─ globe.svg
+  │  ├─ icons
+  │  │  └─ favicon.ico
+  │  ├─ introduction.png
+  │  ├─ logo-dark.png
+  │  ├─ logo-dark.svg
+  │  ├─ logo.png
+  │  ├─ logo.svg
+  │  ├─ moon.png
+  │  ├─ mountain.jpg
+  │  ├─ next.svg
+  │  ├─ reading-dark.png
+  │  ├─ reading.png
+  │  ├─ robot.png
+  │  ├─ robot_dark.png
+  │  ├─ support1.png
+  │  ├─ universe.jpg
+  │  ├─ vercel.svg
+  │  └─ window.svg
+  ├─ sampleData.jsonl
+  ├─ server
+  │  └─ server.ts
+  ├─ styles
+  │  └─ globals.css
+  ├─ tailwind.config.ts
+  ├─ tsconfig.json
+  ├─ tsconfig.server.json
+  ├─ types
+  │  └─ globals.d.ts
+  └─ utils
+     ├─ audioUtils.ts
+     └─ roles.ts
+  ```
+  ©generated by [Project Tree Generator](https://woochanleee.github.io/project-tree-generator)
 </details>
 ---
 ## 🚀 실행 방법
